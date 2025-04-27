@@ -1,4 +1,3 @@
-
 // PII categories and regular expressions for detection
 import React from 'react';
 
@@ -20,14 +19,14 @@ export interface PiiResult {
 
 // Simplified PII detection patterns (in a real application, these would be more sophisticated)
 const PII_PATTERNS = {
+  name: /\b([A-Z][a-z]+)\s+([A-Z][a-z]+)\b/g,
   email: /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g,
   phone: /\b(\+\d{1,2}\s?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}\b/g,
-  // Simple patterns for demo purposes
-  name: /\b([A-Z][a-z]+)\s+([A-Z][a-z]+)\b/g, // Simplified name pattern
   address: /\b\d+\s+[A-Za-z\s]+,\s+[A-Za-z\s]+,\s+[A-Z]{2}\s+\d{5}\b/g,
-  id: /\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b/g, // SSN-like
-  financial: /\b(?:\d{4}[-\s]?){3}\d{4}\b/g, // Credit card-like
-  health: /\b(?:Patient|Medical Record|Diagnosis|Treatment)\s+ID:?\s*[A-Z0-9\-]+\b/gi,
+  id: /\b(?:\d{3}[-\s]?\d{2}[-\s]?\d{4}|\b[A-Z]{2}\d{6}[A-Z]?\b)/g, // SSN and other ID formats
+  financial: /\b(?:\$\s?\d{1,3}(?:,\d{3})*(?:\.\d{2})?|\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4})\b/g,
+  health: /\b(?:Patient|Medical Record|Diagnosis|Treatment|Dr\.|prescription|condition:|MRN:)\s*[A-Za-z0-9\s\-]+\b/gi,
+  other: /\b(?:confidential|classified|secret|private|internal use only)\b/gi,
 };
 
 // Function to detect PII in text

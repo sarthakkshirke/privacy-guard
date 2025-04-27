@@ -1,14 +1,24 @@
 import React from 'react';
 import { PiiMatch, PiiCategory } from './piiDetector';
 
-// Synthetic data for generating fake but realistic-looking replacements
 const syntheticData = {
-  firstNames: ['John', 'Jane', 'Michael', 'Sarah', 'Robert', 'Emily', 'David', 'Lisa'],
-  lastNames: ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis'],
-  emailDomains: ['example.com', 'anonymous.org', 'private.net', 'redacted.com'],
-  streetNames: ['Maple Street', 'Oak Avenue', 'Cedar Lane', 'Pine Road', 'Elm Drive'],
-  cities: ['Springfield', 'Riverside', 'Madison', 'Franklin', 'Clinton'],
-  states: ['CA', 'NY', 'TX', 'FL', 'IL'],
+  firstNames: ['John', 'Jane', 'Michael', 'Sarah', 'Robert', 'Emily', 'David', 'Lisa', 
+               'James', 'Mary', 'William', 'Emma', 'Richard', 'Linda', 'Thomas', 'Susan'],
+  lastNames: ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis',
+              'Anderson', 'Wilson', 'Taylor', 'Moore', 'Jackson', 'Martin', 'Lee', 'Thompson'],
+  emailDomains: ['example.com', 'anonymous.org', 'private.net', 'redacted.com',
+                 'secure.net', 'protected.org', 'placeholder.com', 'masked.net'],
+  streetNames: ['Maple Street', 'Oak Avenue', 'Cedar Lane', 'Pine Road', 'Elm Drive',
+                'Birch Court', 'Willow Way', 'Spruce Boulevard', 'Aspen Circle', 'Sycamore Place'],
+  cities: ['Springfield', 'Riverside', 'Madison', 'Franklin', 'Clinton',
+           'Georgetown', 'Arlington', 'Bristol', 'Salem', 'Newport'],
+  states: ['CA', 'NY', 'TX', 'FL', 'IL', 'PA', 'OH', 'MI', 'GA', 'NC'],
+  hospitals: ['Central Hospital', 'Memorial Medical', 'Unity Healthcare', 'Providence Hospital',
+              'St. Mary Medical Center', 'Regional Hospital', 'Community Health'],
+  conditions: ['General Checkup', 'Regular Visit', 'Health Screening', 'Annual Physical',
+               'Routine Examination', 'Wellness Check', 'Medical Review'],
+  medications: ['Standard Medication', 'Common Treatment', 'Regular Prescription',
+                'Basic Medicine', 'General Therapy', 'Routine Treatment']
 };
 
 // Helper function to get random item from array
@@ -52,9 +62,16 @@ const anonymizeMethods: Record<PiiCategory, (text: string) => string> = {
     // Generate a random credit card number format
     return `XXXX-XXXX-XXXX-${Math.floor(Math.random() * 9000) + 1000}`;
   },
-  health: () => {
-    // Generate a random medical record number
-    return `MRN-${Math.floor(Math.random() * 900000) + 100000}`;
+  health: (text: string) => {
+    const hospital = getRandomItem(syntheticData.hospitals);
+    const condition = getRandomItem(syntheticData.conditions);
+    if (text.toLowerCase().includes('patient')) {
+      return `Patient at ${hospital}`;
+    } else if (text.toLowerCase().includes('diagnosis')) {
+      return `Diagnosis: ${condition}`;
+    } else {
+      return `MRN-${Math.floor(Math.random() * 900000) + 100000}`;
+    }
   },
   other: () => '[REDACTED]',
 };

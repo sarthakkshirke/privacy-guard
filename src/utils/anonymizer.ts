@@ -1,22 +1,61 @@
-
 import React from 'react';
 import { PiiMatch, PiiCategory } from './piiDetector';
+
+// Synthetic data for generating fake but realistic-looking replacements
+const syntheticData = {
+  firstNames: ['John', 'Jane', 'Michael', 'Sarah', 'Robert', 'Emily', 'David', 'Lisa'],
+  lastNames: ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis'],
+  emailDomains: ['example.com', 'anonymous.org', 'private.net', 'redacted.com'],
+  streetNames: ['Maple Street', 'Oak Avenue', 'Cedar Lane', 'Pine Road', 'Elm Drive'],
+  cities: ['Springfield', 'Riverside', 'Madison', 'Franklin', 'Clinton'],
+  states: ['CA', 'NY', 'TX', 'FL', 'IL'],
+};
+
+// Helper function to get random item from array
+const getRandomItem = <T>(array: T[]): T => {
+  return array[Math.floor(Math.random() * array.length)];
+};
 
 // Anonymization methods for different types of PII
 const anonymizeMethods: Record<PiiCategory, (text: string) => string> = {
   name: (name) => {
-    const parts = name.split(' ');
-    return parts.map(part => part[0] + '***').join(' ');
+    // Generate a random full name
+    return `${getRandomItem(syntheticData.firstNames)} ${getRandomItem(syntheticData.lastNames)}`;
   },
   email: (email) => {
-    const [username, domain] = email.split('@');
-    return `${username[0]}***@${domain}`;
+    // Generate a random email while keeping domain format
+    const randomName = getRandomItem(syntheticData.firstNames).toLowerCase();
+    const randomDomain = getRandomItem(syntheticData.emailDomains);
+    return `${randomName}.${Math.floor(Math.random() * 1000)}@${randomDomain}`;
   },
-  phone: () => '***-***-****',
-  address: () => '[ADDRESS REDACTED]',
-  id: () => '[ID REDACTED]',
-  financial: () => '[FINANCIAL INFO REDACTED]',
-  health: () => '[HEALTH INFO REDACTED]',
+  phone: () => {
+    // Generate a random US phone number
+    const areaCode = Math.floor(Math.random() * 900) + 100;
+    const prefix = Math.floor(Math.random() * 900) + 100;
+    const lineNum = Math.floor(Math.random() * 9000) + 1000;
+    return `${areaCode}-${prefix}-${lineNum}`;
+  },
+  address: () => {
+    // Generate a random US address
+    const houseNumber = Math.floor(Math.random() * 9000) + 1000;
+    const street = getRandomItem(syntheticData.streetNames);
+    const city = getRandomItem(syntheticData.cities);
+    const state = getRandomItem(syntheticData.states);
+    const zip = Math.floor(Math.random() * 90000) + 10000;
+    return `${houseNumber} ${street}, ${city}, ${state} ${zip}`;
+  },
+  id: () => {
+    // Generate a random ID that looks like a masked SSN
+    return `XXX-XX-${Math.floor(Math.random() * 9000) + 1000}`;
+  },
+  financial: () => {
+    // Generate a random credit card number format
+    return `XXXX-XXXX-XXXX-${Math.floor(Math.random() * 9000) + 1000}`;
+  },
+  health: () => {
+    // Generate a random medical record number
+    return `MRN-${Math.floor(Math.random() * 900000) + 100000}`;
+  },
   other: () => '[REDACTED]',
 };
 

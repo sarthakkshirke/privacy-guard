@@ -1,5 +1,7 @@
 
 // PII categories and regular expressions for detection
+import React from 'react';
+
 export type PiiCategory = 'name' | 'email' | 'phone' | 'address' | 'id' | 'financial' | 'health' | 'other';
 
 export interface PiiMatch {
@@ -78,7 +80,7 @@ export const detectPii = (text: string): PiiResult => {
 // Function to generate highlighted text with PII markers
 export const generateHighlightedText = (text: string, piiMatches: PiiMatch[]): JSX.Element[] => {
   if (piiMatches.length === 0) {
-    return [<span key="0">{text}</span>];
+    return [React.createElement('span', { key: "0" }, text)];
   }
 
   const result: JSX.Element[] = [];
@@ -88,21 +90,25 @@ export const generateHighlightedText = (text: string, piiMatches: PiiMatch[]): J
     // Add text before the PII
     if (match.startIndex > lastIndex) {
       result.push(
-        <span key={`text-${index}`}>
-          {text.substring(lastIndex, match.startIndex)}
-        </span>
+        React.createElement(
+          'span', 
+          { key: `text-${index}` },
+          text.substring(lastIndex, match.startIndex)
+        )
       );
     }
 
     // Add the highlighted PII
     result.push(
-      <mark 
-        key={`pii-${index}`} 
-        className={`pii-highlight pii-${match.category}`}
-        title={`PII Type: ${match.category}`}
-      >
-        {match.text}
-      </mark>
+      React.createElement(
+        'mark',
+        { 
+          key: `pii-${index}`,
+          className: `pii-highlight pii-${match.category}`,
+          title: `PII Type: ${match.category}`
+        },
+        match.text
+      )
     );
 
     lastIndex = match.endIndex;
@@ -111,9 +117,11 @@ export const generateHighlightedText = (text: string, piiMatches: PiiMatch[]): J
   // Add any remaining text after the last PII
   if (lastIndex < text.length) {
     result.push(
-      <span key={`text-last`}>
-        {text.substring(lastIndex)}
-      </span>
+      React.createElement(
+        'span',
+        { key: 'text-last' },
+        text.substring(lastIndex)
+      )
     );
   }
 

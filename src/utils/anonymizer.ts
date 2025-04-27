@@ -1,4 +1,5 @@
 
+import React from 'react';
 import { PiiMatch, PiiCategory } from './piiDetector';
 
 // Anonymization methods for different types of PII
@@ -50,7 +51,7 @@ export const anonymizePii = (text: string, piiMatches: PiiMatch[]): string => {
 // Function to generate highlighted text with anonymized PII
 export const generateAnonymizedHighlightedText = (text: string, piiMatches: PiiMatch[]): JSX.Element[] => {
   if (piiMatches.length === 0) {
-    return [<span key="0">{text}</span>];
+    return [React.createElement('span', { key: "0" }, text)];
   }
 
   // Create a copy and sort by start index
@@ -69,21 +70,25 @@ export const generateAnonymizedHighlightedText = (text: string, piiMatches: PiiM
     // Add text before the PII
     if (match.startIndex > lastIndex) {
       result.push(
-        <span key={`text-${index}`}>
-          {text.substring(lastIndex, match.startIndex)}
-        </span>
+        React.createElement(
+          'span',
+          { key: `text-${index}` },
+          text.substring(lastIndex, match.startIndex)
+        )
       );
     }
 
     // Add the anonymized highlighted PII
     result.push(
-      <mark 
-        key={`pii-${index}`} 
-        className={`pii-highlight pii-${match.category}`}
-        title={`Original: ${match.text}\nType: ${match.category}`}
-      >
-        {match.anonymized}
-      </mark>
+      React.createElement(
+        'mark',
+        {
+          key: `pii-${index}`,
+          className: `pii-highlight pii-${match.category}`,
+          title: `Original: ${match.text}\nType: ${match.category}`
+        },
+        match.anonymized
+      )
     );
 
     lastIndex = match.endIndex;
@@ -92,9 +97,11 @@ export const generateAnonymizedHighlightedText = (text: string, piiMatches: PiiM
   // Add any remaining text after the last PII
   if (lastIndex < text.length) {
     result.push(
-      <span key={`text-last`}>
-        {text.substring(lastIndex)}
-      </span>
+      React.createElement(
+        'span',
+        { key: `text-last` },
+        text.substring(lastIndex)
+      )
     );
   }
 

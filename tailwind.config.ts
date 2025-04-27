@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,6 +62,32 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// PII category colors
+				pii: {
+					name: '#ea384c',
+					email: '#0EA5E9',
+					phone: '#F97316',
+					address: '#9b87f5',
+					id: '#7E69AB',
+					financial: '#6E59A5',
+					health: '#1A1F2C',
+					other: '#8E9196',
+				},
+				// Risk level colors
+				risk: {
+					low: '#10B981',
+					medium: '#F59E0B',
+					high: '#EF4444',
+					critical: '#7F1D1D',
+				},
+				// Flag category colors
+				flag: {
+					ethical: '#F2FCE2',
+					dangerous: '#FEF7CD',
+					political: '#D6BCFA',
+					confidential: '#1EAEDB',
+					adversarial: '#ea384c',
 				}
 			},
 			borderRadius: {
@@ -84,11 +111,16 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'pulse-slow': {
+					'0%, 100%': { opacity: '1' },
+					'50%': { opacity: '0.8' },
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'pulse-slow': 'pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
 			}
 		}
 	},

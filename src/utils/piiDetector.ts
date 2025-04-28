@@ -1,7 +1,7 @@
 // PII categories and regular expressions for detection
 import React from 'react';
 
-export type PiiCategory = 'name' | 'email' | 'phone' | 'address' | 'id' | 'financial' | 'health' | 'other';
+export type PiiCategory = 'name' | 'email' | 'phone' | 'address' | 'id' | 'financial' | 'health' | 'other' | 'indian_id' | 'indian_financial';
 
 export interface PiiMatch {
   text: string;
@@ -17,15 +17,17 @@ export interface PiiResult {
   totalPiiCount: number;
 }
 
-// Simplified PII detection patterns (in a real application, these would be more sophisticated)
+// Enhanced PII detection patterns with India-specific patterns
 const PII_PATTERNS = {
   name: /\b([A-Z][a-z]+)\s+([A-Z][a-z]+)\b/g,
   email: /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g,
-  phone: /\b(\+\d{1,2}\s?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}\b/g,
-  address: /\b\d+\s+[A-Za-z\s]+,\s+[A-Za-z\s]+,\s+[A-Z]{2}\s+\d{5}\b/g,
-  id: /\b(?:\d{3}[-\s]?\d{2}[-\s]?\d{4}|\b[A-Z]{2}\d{6}[A-Z]?\b)/g, // SSN and other ID formats
+  phone: /\b((\+91[\s-]?)?[6789]\d{9}|[0]\d{10})\b/g, // Indian phone numbers
+  address: /\b\d+\s+[A-Za-z\s]+,\s+[A-Za-z\s]+,\s+[A-Z]{2}\s+\d{6}\b/g, // Indian format with PIN code
+  id: /\b(?:\d{3}[-\s]?\d{2}[-\s]?\d{4}|\b[A-Z]{2}\d{6}[A-Z]?\b)/g,
   financial: /\b(?:\$\s?\d{1,3}(?:,\d{3})*(?:\.\d{2})?|\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4})\b/g,
   health: /\b(?:Patient|Medical Record|Diagnosis|Treatment|Dr\.|prescription|condition:|MRN:)\s*[A-Za-z0-9\s\-]+\b/gi,
+  indian_id: /\b(?:(?:[A-Z]{5}\d{4}[A-Z]|[A-Z]{2}\d{7})|(?:\d{12})|(?:[A-Z]{2}\d{6}[A-Z])|(?:[A-Z]{4}\d{7})|(?:[A-Z]{3}\d{7}))\b/gi, // Aadhar, PAN, Passport, Voter ID, Driving License
+  indian_financial: /\b(?:(?:\d{11})|(?:\d{2}[-\s]?\d{2}[-\s]?\d{6}[-\s]?\d)|(?:\d{4}[-\s]?\d{4}[-\s]?\d{4}))\b/g, // IFSC, Bank Account, UPI ID
   other: /\b(?:confidential|classified|secret|private|internal use only)\b/gi,
 };
 
@@ -41,6 +43,8 @@ export const detectPii = (text: string): PiiResult => {
     financial: 0,
     health: 0,
     other: 0,
+    indian_id: 0,
+    indian_financial: 0,
   };
 
   // For each PII category, find all matches in the text

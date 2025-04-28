@@ -1,4 +1,3 @@
-
 export interface Flag {
   category: string;
   confidence: number;
@@ -24,7 +23,9 @@ const categories = {
   'Financial Risk': [
     'bank', 'account', 'credit', 'balance', 'transaction', 'payment',
     'invoice', 'salary', 'income', 'revenue', 'routing', 'financial',
-    'money', 'fund', '$', 'dollar', 'euro', '€', '£', 'pound'
+    'money', 'fund', '$', 'dollar', 'euro', '€', '£', 'pound',
+    'ifsc', 'upi', 'bank details', 'rtgs', 'neft', 'imps', 'inr', '₹',
+    'rupees', 'lakhs', 'crores'
   ],
   'Medical Risk': [
     'diagnosis', 'treatment', 'patient', 'medical', 'prescription', 'health',
@@ -34,31 +35,42 @@ const categories = {
   'Personal Risk': [
     'ssn', 'social security', 'passport', 'driver license', 'birth date',
     'address', 'phone', 'email', 'contact', 'full name', 'date of birth',
-    'id', 'identification', 'zip code', 'postal code'
+    'id', 'identification', 'zip code', 'postal code',
+    'aadhar', 'pan card', 'voter id', 'driving licence', 'passport',
+    'ration card', 'government id', 'identity proof'
   ],
   'Political Risk': [
     'election', 'party', 'campaign', 'government', 'political', 'policy',
-    'classified', 'clearance', 'authorization', 'intelligence', 'official'
+    'classified', 'clearance', 'authorization', 'intelligence', 'official',
+    'ministry', 'parliament', 'lok sabha', 'rajya sabha', 'constituency',
+    'minister', 'chief minister', 'prime minister', 'governor'
   ],
   'Corporate Risk': [
     'merger', 'acquisition', 'strategy', 'restructuring', 'layoff',
     'intellectual property', 'trade secret', 'patent', 'company',
-    'business', 'enterprise'
+    'business', 'enterprise',
+    'cin', 'llp', 'gst', 'tan', 'msme', 'roc', 'sebi', 'rbi',
+    'corporate affairs'
   ],
   
-  // New categories for LLM prompt detection
+  // Enhanced LLM prompt detection categories
   'Dangerous Content': [
     'bomb', 'weapon', 'explosive', 'kill', 'attack', 'violence', 'poison', 'harmful',
     'lethal', 'terrorist', 'terrorism', 'assassination', 'homicide', 'murder', 
     'suicide', 'torture', 'dangerous', 'destruction', 'destructive', 'damage',
-    'threat', 'threatening', 'hazardous', 'weapon', 'ammunition', 'gun', 'firearm'
+    'threat', 'threatening', 'hazardous', 'weapon', 'ammunition', 'gun', 'firearm',
+    'vulnerability', 'exploit', 'injection', 'backdoor', 'malware',
+    'ransomware', 'cyber attack', 'breach', 'unauthorized', 'crack',
+    'sensitive data', 'bypass security', 'system access'
   ],
   'Unethical Instructions': [
     'bypass', 'ignore', 'circumvent', 'evade', 'avoid', 'break', 'hack', 'crack',
     'illegal', 'unethical', 'immoral', 'cheat', 'fraud', 'deceptive', 'manipulate',
     'manipulative', 'dishonest', 'scam', 'steal', 'theft', 'counterfeit', 'fake',
     'forge', 'falsify', 'lie', 'deceive', 'mislead', 'misrepresent', 
-    'plagiarize', 'infringe', 'copyright', 'exploit', 'abuse'
+    'plagiarize', 'infringe', 'copyright', 'exploit', 'abuse',
+    'impersonate', 'spoofing', 'identity theft', 'social engineering',
+    'phishing', 'scamming', 'fraudulent', 'deceptive practices'
   ],
   'Adversarial Prompting': [
     'DAN', 'do anything now', 'ignore previous instructions', 'disregard', 
@@ -67,14 +79,20 @@ const categories = {
     'roleplay as', 'simulation', 'hypothetical', 'jailbreak', 'prompt injection',
     'system prompt', 'instructions', 'override', 'ignore constraints',
     'bypass filters', 'ignore safety', 'ignore guidelines',
-    'ignore ethical guidelines', 'ignore your programming'
+    'ignore ethical guidelines', 'ignore your programming',
+    'base persona', 'ethical constraints', 'training data', 'model limitations',
+    'safety features', 'model guidelines', 'content filters',
+    'moderation', 'content policy', 'model boundaries', 'system instructions',
+    'initial prompt', 'default behavior', 'training principles'
   ],
   'Discrimination & Hate': [
     'racist', 'racism', 'sexist', 'sexism', 'homophobic', 'homophobia',
     'transphobic', 'transphobia', 'bigot', 'bigotry', 'supremacist', 'superiority',
     'inferior', 'hate', 'hateful', 'derogatory', 'slur', 'stereotype',
     'prejudice', 'discriminate', 'discrimination', 'xenophobic', 'xenophobia',
-    'antisemitic', 'antisemitism', 'islamophobic', 'islamophobia'
+    'antisemitic', 'antisemitism', 'islamophobic', 'islamophobia',
+    'caste', 'religion', 'community', 'sect', 'minority', 'majority',
+    'ethnicity', 'linguistic', 'regional bias', 'cultural prejudice'
   ],
   'NSFW Content': [
     'pornography', 'pornographic', 'explicit', 'sexual', 'obscene', 'nude',
@@ -89,7 +107,10 @@ const categories = {
   'Prompt Engineering': [
     'write a prompt', 'create a prompt', 'craft a prompt', 'generate a prompt',
     'design a prompt', 'optimize a prompt', 'refine a prompt', 'improve a prompt',
-    'prompt engineering', 'chain of thought', 'few shot', 'zero shot'
+    'prompt engineering', 'chain of thought', 'few shot', 'zero shot',
+    'in-context learning', 'chain-of-thought', 'prompt template', 'prompt format',
+    'instruction tuning', 'task description', 'prompt design', 'system message',
+    'user message', 'assistant message', 'instruction pattern', 'prompt structure'
   ],
   'Safe Content': [
     'educational', 'learning', 'teach', 'study', 'academic', 'research',

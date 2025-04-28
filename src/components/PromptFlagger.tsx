@@ -1,9 +1,8 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { FlaggingResult, Flag } from '@/utils/contentFlagger';
 import { Badge } from '@/components/ui/badge';
-import { Shield, ShieldAlert, ShieldCheck, AlertTriangle, AlertCircle, Ban } from 'lucide-react';
+import { Shield, ShieldAlert, ShieldCheck, AlertTriangle, AlertCircle, Badge as BadgeIcon } from 'lucide-react';
 
 interface PromptFlaggerProps {
   flaggingResult: FlaggingResult;
@@ -12,12 +11,10 @@ interface PromptFlaggerProps {
 const PromptFlagger: React.FC<PromptFlaggerProps> = ({ flaggingResult }) => {
   const { flags, hasFlaggedContent } = flaggingResult;
   
-  // Filter out Safe Content if there are other flags
   const displayFlags = hasFlaggedContent 
     ? flags.filter(flag => flag.category !== 'Safe Content') 
     : flags;
   
-  // Helper function to get badge variant based on flag category
   const getFlagColor = (category: string) => {
     if (category === 'Dangerous Content') return 'bg-red-500 text-white';
     if (category === 'Unethical Instructions') return 'bg-yellow-600 text-white';
@@ -29,19 +26,19 @@ const PromptFlagger: React.FC<PromptFlaggerProps> = ({ flaggingResult }) => {
     if (category === 'Prompt Engineering') return 'bg-blue-500 text-white';
     if (category === 'Data Scraping') return 'bg-cyan-600 text-white';
     if (category === 'Confidential') return 'bg-slate-700 text-white';
+    if (category.includes('Indian')) return 'bg-indigo-600 text-white';
     return 'bg-gray-600 text-white';
   };
   
-  // Helper function to get appropriate icon for category
   const getCategoryIcon = (category: string) => {
-    if (category === 'Dangerous Content') return <Ban className="h-4 w-4" />;
+    if (category === 'Dangerous Content') return <ShieldAlert className="h-4 w-4" />;
     if (category === 'Unethical Instructions') return <AlertTriangle className="h-4 w-4" />;
     if (category === 'Adversarial Prompting') return <AlertCircle className="h-4 w-4" />;
     if (category === 'Safe Content') return <ShieldCheck className="h-4 w-4" />;
+    if (category.includes('Indian')) return <BadgeIcon className="h-4 w-4" />;
     return <Shield className="h-4 w-4" />;
   };
   
-  // Get the risk level based on flags
   const getRiskLevel = () => {
     const dangerousFlags = flags.filter(f => 
       ['Dangerous Content', 'Unethical Instructions', 'Adversarial Prompting', 'Discrimination & Hate', 'NSFW Content']

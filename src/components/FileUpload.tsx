@@ -41,31 +41,51 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileContent }) => {
     if (!file) return;
     
     setIsLoading(true);
+    setError(null);
     
-    // For PDF/DOC, in a real app you'd use a proper parser
-    // Here we'll just simulate text extraction for demo purposes
-    if (file.type === 'text/plain' || file.name.endsWith('.txt')) {
-      try {
-        const text = await file.text();
-        onFileContent(text);
-      } catch (err) {
-        setError('Failed to read file content.');
-        console.error(err);
+    try {
+      // For text files, read the full content directly
+      if (file.type === 'text/plain' || file.name.endsWith('.txt')) {
+        try {
+          const text = await file.text();
+          onFileContent(text);
+        } catch (err) {
+          console.error('Failed to read file content:', err);
+          setError('Failed to read file content.');
+        }
+      } else {
+        // Simulate PDF/DOC processing with a complete sample text
+        // In a real app, you would use a proper parser library
+        setTimeout(() => {
+          const simulatedText = `This is extracted content from ${file.name}. 
+          It contains PII for Jane Doe who can be reached at jane.doe@company.org or 
+          (555) 987-6543. Her employee ID is 987-65-4321 and she lives at 
+          456 Business Ave, Enterprise City, CA 94321.
+          This document is marked as confidential and internal use only.
+          
+          The document also contains financial information about the Q3 revenue: $2,456,789.00.
+          Bank account information: 1234-5678-9012-3456 with routing number 987654321.
+          
+          Patient medical records indicate treatment for chronic conditions by Dr. Smith
+          at Memorial Hospital. Prescription for medication XYZ was filled on 2023-04-15.
+          
+          Please keep this information secure and do not distribute. Authorized personnel only.
+          
+          CONFIDENTIAL - SECRET - INTERNAL USE ONLY
+          
+          Additional contact: John Smith, john.smith@company.org, (555) 123-4567
+          Additional ID: SSN 123-45-6789
+          Additional address: 123 Main St, Anytown, NY 12345`;
+          
+          onFileContent(simulatedText);
+        }, 1000);
       }
-    } else {
-      // Simulate PDF/DOC processing with sample text
-      setTimeout(() => {
-        const simulatedText = `This is extracted content from ${file.name}. 
-        It contains PII for Jane Doe who can be reached at jane.doe@company.org or 
-        (555) 987-6543. Her employee ID is 987-65-4321 and she lives at 
-        456 Business Ave, Enterprise City, CA 94321.
-        This document is marked as confidential and internal use only.`;
-        
-        onFileContent(simulatedText);
-      }, 1500);
+    } catch (error) {
+      console.error('Error processing file:', error);
+      setError('Failed to process file.');
+    } finally {
+      setIsLoading(false);
     }
-    
-    setIsLoading(false);
   };
 
   const clearFile = () => {

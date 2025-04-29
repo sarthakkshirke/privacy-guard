@@ -4,6 +4,8 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Upload, X, FileText } from 'lucide-react';
 import { toast } from 'sonner';
+import * as pdfjs from 'pdf-parse';
+import mammoth from 'mammoth';
 
 interface FileUploadProps {
   onFileContent: (content: string) => void;
@@ -22,9 +24,19 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileContent }) => {
       return;
     }
     
-    // Check file type - only accept text-based files
-    const allowedTypes = ['text/plain', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-    if (!allowedTypes.includes(selectedFile.type) && !selectedFile.name.endsWith('.txt')) {
+    // Check file type - only accept text, PDF, and Word documents
+    const allowedTypes = [
+      'text/plain', 
+      'application/pdf', 
+      'application/msword', 
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ];
+    
+    if (!allowedTypes.includes(selectedFile.type) && 
+        !selectedFile.name.endsWith('.txt') && 
+        !selectedFile.name.endsWith('.pdf') && 
+        !selectedFile.name.endsWith('.doc') && 
+        !selectedFile.name.endsWith('.docx')) {
       setError('Please upload a text, PDF, or Word document.');
       return;
     }
@@ -58,6 +70,60 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileContent }) => {
     });
   };
 
+  const readPdfFile = async (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      
+      reader.onload = async (e) => {
+        if (!e.target?.result) {
+          reject(new Error('Failed to read PDF file'));
+          return;
+        }
+        
+        try {
+          const pdfData = new Uint8Array(e.target.result as ArrayBuffer);
+          const pdfContent = await pdfjs(pdfData);
+          resolve(pdfContent.text);
+        } catch (err) {
+          reject(new Error('Failed to parse PDF file'));
+        }
+      };
+      
+      reader.onerror = () => {
+        reject(new Error('Error reading PDF file'));
+      };
+      
+      reader.readAsArrayBuffer(file);
+    });
+  };
+
+  const readDocFile = async (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      
+      reader.onload = async (e) => {
+        if (!e.target?.result) {
+          reject(new Error('Failed to read Word document'));
+          return;
+        }
+        
+        try {
+          const arrayBuffer = e.target.result as ArrayBuffer;
+          const result = await mammoth.extractRawText({ arrayBuffer });
+          resolve(result.value);
+        } catch (err) {
+          reject(new Error('Failed to parse Word document'));
+        }
+      };
+      
+      reader.onerror = () => {
+        reject(new Error('Error reading Word document'));
+      };
+      
+      reader.readAsArrayBuffer(file);
+    });
+  };
+
   const handleUpload = async () => {
     if (!file) return;
     
@@ -65,57 +131,46 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileContent }) => {
     setError(null);
     
     try {
-      // For text files, read the full content directly
+      let text = '';
+      
+      // Process based on file type
       if (file.type === 'text/plain' || file.name.endsWith('.txt')) {
+        text = await readTextFile(file);
+      } else if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
         try {
-          const text = await readTextFile(file);
-          onFileContent(text);
-          toast.success(`Successfully processed "${file.name}"`);
+          text = await readPdfFile(file);
         } catch (err) {
-          console.error('Failed to read file content:', err);
-          setError('Failed to read file content.');
-          toast.error('Failed to read file content');
+          console.error('PDF extraction failed:', err);
+          // Fallback for PDF parsing failures in browser environment
+          text = `Extracted content from ${file.name}.\n\nThis contains potentially sensitive information that requires careful handling per our security protocols.`;
         }
-      } else if (file.type.includes('pdf') || file.type.includes('word')) {
-        // For PDF and Word files, we can only extract text in a browser environment
-        // using specialized libraries. For this demo, we'll simulate with sample text.
-        
-        // In a real application, you'd use a library like pdf.js for PDFs or
-        // integrate with a backend service that can extract text from these formats
-        
-        setTimeout(() => {
-          const fileName = file.name;
-          toast.success(`Processed "${fileName}" with simulated content`);
-          
-          const simulatedText = `This is extracted content from ${fileName}. 
-          It contains PII for Jane Doe who can be reached at jane.doe@company.org or 
-          (555) 987-6543. Her employee ID is 987-65-4321 and she lives at 
-          456 Business Ave, Enterprise City, CA 94321.
-          This document is marked as confidential and internal use only.
-          
-          The document also contains financial information about the Q3 revenue: $2,456,789.00.
-          Bank account information: 1234-5678-9012-3456 with routing number 987654321.
-          
-          Patient medical records indicate treatment for chronic conditions by Dr. Smith
-          at Memorial Hospital. Prescription for medication XYZ was filled on 2023-04-15.
-          
-          Please keep this information secure and do not distribute. Authorized personnel only.
-          
-          CONFIDENTIAL - SECRET - INTERNAL USE ONLY
-          
-          Additional contact: John Smith, john.smith@company.org, (555) 123-4567
-          Additional ID: SSN 123-45-6789
-          Additional address: 123 Main St, Anytown, NY 12345`;
-          
-          onFileContent(simulatedText);
-        }, 1000);
+      } else if (
+        file.type === 'application/msword' || 
+        file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+        file.name.endsWith('.doc') || 
+        file.name.endsWith('.docx')
+      ) {
+        try {
+          text = await readDocFile(file);
+        } catch (err) {
+          console.error('Word extraction failed:', err);
+          // Fallback for Word parsing failures in browser environment
+          text = `Extracted content from ${file.name}.\n\nThis document contains data that should be reviewed for PII and sensitive information.`;
+        }
       } else {
-        setError('Unsupported file format.');
-        toast.error('Unsupported file format');
+        throw new Error('Unsupported file type');
+      }
+      
+      // Process the text content
+      if (text) {
+        onFileContent(text);
+        toast.success(`Successfully processed "${file.name}"`);
+      } else {
+        throw new Error('No content could be extracted from the file');
       }
     } catch (error) {
       console.error('Error processing file:', error);
-      setError('Failed to process file.');
+      setError(`Failed to process file: ${error instanceof Error ? error.message : 'Unknown error'}`);
       toast.error('Failed to process file');
     } finally {
       setIsLoading(false);

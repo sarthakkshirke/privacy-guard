@@ -16,7 +16,18 @@ interface PiiAnonymizerProps {
 const PiiAnonymizer: React.FC<PiiAnonymizerProps> = ({ text, detectedPii }) => {
   const [copied, setCopied] = useState(false);
   const [processingMode, setProcessingMode] = useState<ProcessingMode>('anonymize');
-  const [selectedCategories, setSelectedCategories] = useState<PiiCategory[]>(Object.values(PiiCategory));
+  const [selectedCategories, setSelectedCategories] = useState<PiiCategory[]>(Object.keys({
+    name: 'name',
+    email: 'email',
+    phone: 'phone',
+    address: 'address',
+    id: 'id',
+    financial: 'financial',
+    health: 'health',
+    other: 'other',
+    indian_id: 'indian_id',
+    indian_financial: 'indian_financial'
+  }) as PiiCategory[]);
   
   const processedText = anonymizePii(text, detectedPii, selectedCategories, processingMode);
   

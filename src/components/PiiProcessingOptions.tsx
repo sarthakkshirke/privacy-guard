@@ -22,6 +22,22 @@ interface PiiProcessingOptionsProps {
   onCategoriesChange: (categories: PiiCategory[]) => void;
 }
 
+// Define all PII categories 
+const PII_CATEGORY_VALUES: Record<PiiCategory, string> = {
+  name: 'name',
+  email: 'email',
+  phone: 'phone',
+  address: 'address',
+  id: 'id',
+  financial: 'financial',
+  health: 'health',
+  other: 'other',
+  indian_id: 'indian_id',
+  indian_financial: 'indian_financial'
+};
+
+const PII_CATEGORIES = Object.keys(PII_CATEGORY_VALUES) as PiiCategory[];
+
 const PiiProcessingOptions: React.FC<PiiProcessingOptionsProps> = ({
   selectedMode,
   selectedCategories,
@@ -50,7 +66,7 @@ const PiiProcessingOptions: React.FC<PiiProcessingOptionsProps> = ({
   };
 
   const handleSelectAll = () => {
-    onCategoriesChange(Object.values(PiiCategory));
+    onCategoriesChange(PII_CATEGORIES);
   };
 
   const handleDeselectAll = () => {
@@ -113,7 +129,7 @@ const PiiProcessingOptions: React.FC<PiiProcessingOptionsProps> = ({
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {Object.values(PiiCategory).map((category) => (
+            {PII_CATEGORIES.map((category) => (
               <div key={category} className="flex items-center space-x-2">
                 <Checkbox 
                   id={`category-${category}`} 

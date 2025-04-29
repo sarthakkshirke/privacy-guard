@@ -1,7 +1,21 @@
 
 import React from 'react';
 import { PiiMatch, PiiCategory } from './piiDetector';
-import * as CryptoJS from 'crypto-js';
+import CryptoJS from 'crypto-js';
+
+// Define an object to store PII category values
+const PII_CATEGORIES = {
+  name: 'name',
+  email: 'email',
+  phone: 'phone',
+  address: 'address',
+  id: 'id',
+  financial: 'financial',
+  health: 'health',
+  other: 'other',
+  indian_id: 'indian_id',
+  indian_financial: 'indian_financial'
+} as const;
 
 const syntheticData = {
   firstNames: ['John', 'Jane', 'Michael', 'Sarah', 'Robert', 'Emily', 'David', 'Lisa', 
@@ -169,7 +183,7 @@ export const encryptPii = (text: string, piiMatches: PiiMatch[], selectedCategor
 export const anonymizePii = (
   text: string, 
   piiMatches: PiiMatch[], 
-  selectedCategories: PiiCategory[] = Object.values(PiiCategory), 
+  selectedCategories: PiiCategory[] = Object.keys(PII_CATEGORIES) as PiiCategory[], 
   mode: 'anonymize' | 'redact' | 'encrypt' = 'anonymize'
 ): string => {
   if (piiMatches.length === 0) {
@@ -212,7 +226,7 @@ export const anonymizePii = (
 export const generateAnonymizedHighlightedText = (
   text: string, 
   piiMatches: PiiMatch[],
-  selectedCategories: PiiCategory[] = Object.values(PiiCategory),
+  selectedCategories: PiiCategory[] = Object.keys(PII_CATEGORIES) as PiiCategory[],
   mode: 'anonymize' | 'redact' | 'encrypt' = 'anonymize'
 ): JSX.Element[] => {
   if (piiMatches.length === 0) {

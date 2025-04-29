@@ -4,8 +4,14 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Upload, X, FileText } from 'lucide-react';
 import { toast } from 'sonner';
-import * as pdfjs from 'pdf-parse';
 import mammoth from 'mammoth';
+
+// Import pdfjs directly for browser compatibility
+import * as pdfjsLib from 'pdfjs-dist';
+
+// Set workerSrc to enable PDF.js to work in browser
+const pdfjsWorkerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorkerSrc;
 
 interface FileUploadProps {
   onFileContent: (content: string) => void;
@@ -81,10 +87,28 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileContent }) => {
         }
         
         try {
-          const pdfData = new Uint8Array(e.target.result as ArrayBuffer);
-          const pdfContent = await pdfjs(pdfData);
-          resolve(pdfContent.text);
+          const typedArray = new Uint8Array(e.target.result as ArrayBuffer);
+          
+          // Using PDF.js for browser compatibility
+          const loadingTask = pdfjsLib.getDocument({ data: typedArray });
+          const pdf = await loadingTask.promise;
+          
+          let fullText = '';
+          
+          // Extract text from all pages
+          for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
+            const textContent = await page.getTextContent();
+            const pageText = textContent.items
+              .map((item: any) => item.str)
+              .join(' ');
+            
+            fullText += pageText + '\n';
+          }
+          
+          resolve(fullText);
         } catch (err) {
+          console.error('Error parsing PDF:', err);
           reject(new Error('Failed to parse PDF file'));
         }
       };
@@ -112,6 +136,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileContent }) => {
           const result = await mammoth.extractRawText({ arrayBuffer });
           resolve(result.value);
         } catch (err) {
+          console.error('Failed to parse Word document:', err);
           reject(new Error('Failed to parse Word document'));
         }
       };
@@ -141,8 +166,9 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileContent }) => {
           text = await readPdfFile(file);
         } catch (err) {
           console.error('PDF extraction failed:', err);
-          // Fallback for PDF parsing failures in browser environment
-          text = `Extracted content from ${file.name}.\n\nThis contains potentially sensitive information that requires careful handling per our security protocols.`;
+          toast.error('Could not extract PDF content properly');
+          // Provide minimal fallback content
+          text = `Could not fully extract content from ${file.name}. The PDF may be scanned or protected.`;
         }
       } else if (
         file.type === 'application/msword' || 
@@ -154,8 +180,9 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileContent }) => {
           text = await readDocFile(file);
         } catch (err) {
           console.error('Word extraction failed:', err);
-          // Fallback for Word parsing failures in browser environment
-          text = `Extracted content from ${file.name}.\n\nThis document contains data that should be reviewed for PII and sensitive information.`;
+          toast.error('Could not extract Word document content properly');
+          // Provide minimal fallback content
+          text = `Could not fully extract content from ${file.name}. The document may be protected.`;
         }
       } else {
         throw new Error('Unsupported file type');

@@ -3,6 +3,7 @@ import React, { useState, ChangeEvent } from 'react';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Upload, X, FileText } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface FileUploadProps {
   onFileContent: (content: string) => void;
@@ -37,6 +38,26 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileContent }) => {
     setFile(selectedFile);
   };
 
+  const readTextFile = async (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      
+      reader.onload = (e) => {
+        if (e.target?.result) {
+          resolve(e.target.result as string);
+        } else {
+          reject(new Error('Failed to read file content'));
+        }
+      };
+      
+      reader.onerror = () => {
+        reject(new Error('Error reading file'));
+      };
+      
+      reader.readAsText(file);
+    });
+  };
+
   const handleUpload = async () => {
     if (!file) return;
     
@@ -47,17 +68,26 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileContent }) => {
       // For text files, read the full content directly
       if (file.type === 'text/plain' || file.name.endsWith('.txt')) {
         try {
-          const text = await file.text();
+          const text = await readTextFile(file);
           onFileContent(text);
+          toast.success(`Successfully processed "${file.name}"`);
         } catch (err) {
           console.error('Failed to read file content:', err);
           setError('Failed to read file content.');
+          toast.error('Failed to read file content');
         }
-      } else {
-        // Simulate PDF/DOC processing with a complete sample text
-        // In a real app, you would use a proper parser library
+      } else if (file.type.includes('pdf') || file.type.includes('word')) {
+        // For PDF and Word files, we can only extract text in a browser environment
+        // using specialized libraries. For this demo, we'll simulate with sample text.
+        
+        // In a real application, you'd use a library like pdf.js for PDFs or
+        // integrate with a backend service that can extract text from these formats
+        
         setTimeout(() => {
-          const simulatedText = `This is extracted content from ${file.name}. 
+          const fileName = file.name;
+          toast.success(`Processed "${fileName}" with simulated content`);
+          
+          const simulatedText = `This is extracted content from ${fileName}. 
           It contains PII for Jane Doe who can be reached at jane.doe@company.org or 
           (555) 987-6543. Her employee ID is 987-65-4321 and she lives at 
           456 Business Ave, Enterprise City, CA 94321.
@@ -79,10 +109,14 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileContent }) => {
           
           onFileContent(simulatedText);
         }, 1000);
+      } else {
+        setError('Unsupported file format.');
+        toast.error('Unsupported file format');
       }
     } catch (error) {
       console.error('Error processing file:', error);
       setError('Failed to process file.');
+      toast.error('Failed to process file');
     } finally {
       setIsLoading(false);
     }
@@ -138,8 +172,19 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileContent }) => {
         <Button 
           onClick={handleUpload} 
           disabled={!file || isLoading}
+          className="gap-2"
         >
-          {isLoading ? 'Processing...' : 'Upload & Analyze'}
+          {isLoading ? (
+            <>
+              <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              Processing...
+            </>
+          ) : (
+            <>
+              <FileText className="h-4 w-4" />
+              Upload & Analyze
+            </>
+          )}
         </Button>
       </CardFooter>
     </Card>

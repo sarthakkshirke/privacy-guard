@@ -1,12 +1,12 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { anonymizePii, generateAnonymizedHighlightedText } from '@/utils/anonymizer';
-import { PiiMatch } from '@/utils/piiDetector';
+import { PiiCategory, PiiMatch } from '@/utils/piiDetector';
 import { Copy, CheckCircle } from 'lucide-react';
-import { useState } from 'react';
 import { toast } from 'sonner';
+import PiiProcessingOptions, { ProcessingMode } from './PiiProcessingOptions';
 
 interface PiiAnonymizerProps {
   text: string;
@@ -15,39 +15,64 @@ interface PiiAnonymizerProps {
 
 const PiiAnonymizer: React.FC<PiiAnonymizerProps> = ({ text, detectedPii }) => {
   const [copied, setCopied] = useState(false);
+  const [processingMode, setProcessingMode] = useState<ProcessingMode>('anonymize');
+  const [selectedCategories, setSelectedCategories] = useState<PiiCategory[]>(Object.values(PiiCategory));
   
-  const anonymizedText = anonymizePii(text, detectedPii);
+  const processedText = anonymizePii(text, detectedPii, selectedCategories, processingMode);
   
   const handleCopy = () => {
-    navigator.clipboard.writeText(anonymizedText);
+    navigator.clipboard.writeText(processedText);
     setCopied(true);
-    toast.success('Anonymized text copied to clipboard');
+    toast.success('Processed text copied to clipboard');
     
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleModeChange = (mode: ProcessingMode) => {
+    setProcessingMode(mode);
+  };
+
+  const handleCategoriesChange = (categories: PiiCategory[]) => {
+    setSelectedCategories(categories);
+  };
+
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle>Anonymized Version</CardTitle>
-        <CardDescription>
-          Use this version to preserve context while protecting sensitive information
-        </CardDescription>
-      </CardHeader>
+    <div className="space-y-6">
+      <PiiProcessingOptions
+        selectedMode={processingMode}
+        selectedCategories={selectedCategories}
+        onModeChange={handleModeChange}
+        onCategoriesChange={handleCategoriesChange}
+      />
       
-      <CardContent>
-        <div className="bg-gray-50 p-4 rounded-md border whitespace-pre-wrap text-left">
-          {generateAnonymizedHighlightedText(text, detectedPii)}
-        </div>
-      </CardContent>
-      
-      <CardFooter className="flex justify-end">
-        <Button onClick={handleCopy} variant="outline" className="gap-2">
-          {copied ? <CheckCircle className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-          {copied ? 'Copied' : 'Copy Anonymized Text'}
-        </Button>
-      </CardFooter>
-    </Card>
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle>
+            {processingMode === 'anonymize' && 'Anonymized Version'}
+            {processingMode === 'redact' && 'Redacted Version'}
+            {processingMode === 'encrypt' && 'Encrypted Version'}
+          </CardTitle>
+          <CardDescription>
+            {processingMode === 'anonymize' && 'Using synthetic data to preserve context while protecting information'}
+            {processingMode === 'redact' && 'Completely hiding sensitive information with redaction markers'}
+            {processingMode === 'encrypt' && 'Securely transforming sensitive information with encryption'}
+          </CardDescription>
+        </CardHeader>
+        
+        <CardContent>
+          <div className="bg-gray-50 p-4 rounded-md border whitespace-pre-wrap text-left">
+            {generateAnonymizedHighlightedText(text, detectedPii, selectedCategories, processingMode)}
+          </div>
+        </CardContent>
+        
+        <CardFooter className="flex justify-end">
+          <Button onClick={handleCopy} variant="outline" className="gap-2">
+            {copied ? <CheckCircle className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+            {copied ? 'Copied' : 'Copy Processed Text'}
+          </Button>
+        </CardFooter>
+      </Card>
+    </div>
   );
 };
 

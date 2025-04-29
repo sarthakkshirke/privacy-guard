@@ -1,5 +1,7 @@
+
 import React from 'react';
 import { PiiMatch, PiiCategory } from './piiDetector';
+import * as CryptoJS from 'crypto-js';
 
 const syntheticData = {
   firstNames: ['John', 'Jane', 'Michael', 'Sarah', 'Robert', 'Emily', 'David', 'Lisa', 
@@ -33,6 +35,26 @@ const syntheticData = {
 // Helper function to get random item from array
 const getRandomItem = <T>(array: T[]): T => {
   return array[Math.floor(Math.random() * array.length)];
+};
+
+// Simple encryption using AES
+const encrypt = (text: string): string => {
+  const salt = "PrivacyGuardian";
+  return CryptoJS.AES.encrypt(text, salt).toString().substring(0, 20) + '...';
+};
+
+// Redaction methods for different types of PII
+const redactMethods: Record<PiiCategory, (text: string) => string> = {
+  name: () => '[NAME REDACTED]',
+  email: () => '[EMAIL REDACTED]',
+  phone: () => '[PHONE REDACTED]',
+  address: () => '[ADDRESS REDACTED]',
+  id: () => '[ID REDACTED]',
+  financial: () => '[FINANCIAL INFO REDACTED]',
+  health: () => '[HEALTH INFO REDACTED]',
+  other: () => '[REDACTED]',
+  indian_id: () => '[INDIAN ID REDACTED]',
+  indian_financial: () => '[INDIAN FINANCIAL INFO REDACTED]'
 };
 
 // Anonymization methods for different types of PII
@@ -114,47 +136,104 @@ const anonymizeMethods: Record<PiiCategory, (text: string) => string> = {
   }
 };
 
-// Function to anonymize detected PII
-export const anonymizePii = (text: string, piiMatches: PiiMatch[]): string => {
+// Function to encrypt detected PII
+export const encryptPii = (text: string, piiMatches: PiiMatch[], selectedCategories: PiiCategory[]): string => {
   if (piiMatches.length === 0) {
     return text;
   }
 
   // Sort matches in reverse order (to avoid index shifting when replacing text)
-  const sortedMatches = [...piiMatches].sort((a, b) => b.startIndex - a.startIndex);
+  const sortedMatches = [...piiMatches]
+    .filter(match => selectedCategories.includes(match.category))
+    .sort((a, b) => b.startIndex - a.startIndex);
+  
+  let encryptedText = text;
+  
+  // Replace each PII instance with its encrypted version
+  sortedMatches.forEach(match => {
+    const encrypted = encrypt(match.text);
+    
+    encryptedText = 
+      encryptedText.substring(0, match.startIndex) + 
+      encrypted + 
+      encryptedText.substring(match.endIndex);
+    
+    // Update the match with the encrypted value for reference
+    match.anonymized = encrypted;
+  });
+  
+  return encryptedText;
+};
+
+// Function to anonymize detected PII
+export const anonymizePii = (
+  text: string, 
+  piiMatches: PiiMatch[], 
+  selectedCategories: PiiCategory[] = Object.values(PiiCategory), 
+  mode: 'anonymize' | 'redact' | 'encrypt' = 'anonymize'
+): string => {
+  if (piiMatches.length === 0) {
+    return text;
+  }
+
+  // Sort matches in reverse order (to avoid index shifting when replacing text)
+  const sortedMatches = [...piiMatches]
+    .filter(match => selectedCategories.includes(match.category))
+    .sort((a, b) => b.startIndex - a.startIndex);
   
   let anonymizedText = text;
   
-  // Replace each PII instance with its anonymized version
+  // Replace each PII instance with its processed version
   sortedMatches.forEach(match => {
-    const anonymizeMethod = anonymizeMethods[match.category];
-    const anonymized = anonymizeMethod(match.text);
+    let processed = match.text;
+    
+    if (mode === 'redact') {
+      processed = redactMethods[match.category](match.text);
+    } else if (mode === 'encrypt') {
+      processed = encrypt(match.text);
+    } else {
+      // Default: anonymize
+      processed = anonymizeMethods[match.category](match.text);
+    }
     
     anonymizedText = 
       anonymizedText.substring(0, match.startIndex) + 
-      anonymized + 
+      processed + 
       anonymizedText.substring(match.endIndex);
     
-    // Update the match with the anonymized value for reference
-    match.anonymized = anonymized;
+    // Update the match with the processed value for reference
+    match.anonymized = processed;
   });
   
   return anonymizedText;
 };
 
 // Function to generate highlighted text with anonymized PII
-export const generateAnonymizedHighlightedText = (text: string, piiMatches: PiiMatch[]): JSX.Element[] => {
+export const generateAnonymizedHighlightedText = (
+  text: string, 
+  piiMatches: PiiMatch[],
+  selectedCategories: PiiCategory[] = Object.values(PiiCategory),
+  mode: 'anonymize' | 'redact' | 'encrypt' = 'anonymize'
+): JSX.Element[] => {
   if (piiMatches.length === 0) {
     return [React.createElement('span', { key: "0" }, text)];
   }
 
   // Create a copy and sort by start index
-  const sortedMatches = [...piiMatches].sort((a, b) => a.startIndex - b.startIndex);
+  const sortedMatches = [...piiMatches]
+    .filter(match => selectedCategories.includes(match.category))
+    .sort((a, b) => a.startIndex - b.startIndex);
   
-  // First anonymize all PIIs
+  // First process all PIIs based on selected mode
   sortedMatches.forEach(match => {
-    const anonymizeMethod = anonymizeMethods[match.category];
-    match.anonymized = anonymizeMethod(match.text);
+    if (mode === 'redact') {
+      match.anonymized = redactMethods[match.category](match.text);
+    } else if (mode === 'encrypt') {
+      match.anonymized = encrypt(match.text);
+    } else {
+      // Default: anonymize
+      match.anonymized = anonymizeMethods[match.category](match.text);
+    }
   });
 
   const result: JSX.Element[] = [];

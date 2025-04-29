@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { anonymizePii, generateAnonymizedHighlightedText } from '@/utils/anonymizer';
+import { anonymizePii, generateAnonymizedHighlightedText } from '@/utils/pii';
 import { PiiCategory, PiiMatch } from '@/utils/piiDetector';
 import { Copy, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';

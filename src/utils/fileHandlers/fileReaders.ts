@@ -2,8 +2,11 @@
 import mammoth from 'mammoth';
 import * as pdfjsLib from 'pdfjs-dist';
 
-// Configure PDF.js worker - using a CDN version that matches our installed version
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
+// Configure PDF.js worker with inline worker to avoid CDN loading issues
+const pdfjsWorker = await import('pdfjs-dist/build/pdf.worker.mjs');
+if (typeof window !== 'undefined' && 'PDFWorker' in pdfjsWorker) {
+  pdfjsLib.GlobalWorkerOptions.workerPort = new pdfjsWorker.PDFWorker();
+}
 
 export const readTextFile = async (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -39,7 +42,7 @@ export const readPdfFile = async (file: File): Promise<string> => {
         const typedArray = new Uint8Array(e.target.result as ArrayBuffer);
         
         // Using PDF.js for browser compatibility
-        const loadingTask = pdfjsLib.getDocument({ data: typedArray });
+        const loadingTask = pdfjsLib.getDocument(typedArray);
         const pdf = await loadingTask.promise;
         
         let fullText = '';

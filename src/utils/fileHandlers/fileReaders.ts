@@ -1,5 +1,9 @@
+
 import mammoth from 'mammoth';
-import pdfParse from 'pdf-parse';
+import * as pdfjsLib from 'pdfjs-dist';
+
+// Configure PDF.js worker - using a CDN version that matches our installed version
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
 
 export const readTextFile = async (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -34,16 +38,29 @@ export const readPdfFile = async (file: File): Promise<string> => {
       try {
         const typedArray = new Uint8Array(e.target.result as ArrayBuffer);
         
-        // Using pdf-parse instead of pdf.js
-        const data = await pdfParse(typedArray);
-        const text = data.text;
+        // Using PDF.js for browser compatibility
+        const loadingTask = pdfjsLib.getDocument({ data: typedArray });
+        const pdf = await loadingTask.promise;
         
-        if (!text || text.trim() === '') {
+        let fullText = '';
+        
+        // Extract text from all pages
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const textContent = await page.getTextContent();
+          const pageText = textContent.items
+            .map((item: any) => item.str)
+            .join(' ');
+          
+          fullText += pageText + '\n';
+        }
+        
+        if (!fullText || fullText.trim() === '') {
           reject(new Error('No text content found in PDF'));
           return;
         }
         
-        resolve(text);
+        resolve(fullText);
       } catch (err) {
         console.error('Error parsing PDF:', err);
         reject(new Error('Failed to parse PDF file'));

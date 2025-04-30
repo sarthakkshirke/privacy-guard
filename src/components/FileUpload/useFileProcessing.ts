@@ -50,11 +50,13 @@ export const useFileProcessing = ({ onFileContent }: UseFileProcessingProps) => 
       } else if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
         try {
           text = await readPdfFile(file);
+          if (!text || text.trim() === '') {
+            throw new Error('No text content could be extracted from the PDF');
+          }
         } catch (err) {
           console.error('PDF extraction failed:', err);
           toast.error('Could not extract PDF content properly');
-          // Provide minimal fallback content
-          text = `Could not fully extract content from ${file.name}. The PDF may be scanned or protected.`;
+          throw new Error(`PDF extraction failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
         }
       } else if (
         file.type === 'application/msword' || 
@@ -67,8 +69,7 @@ export const useFileProcessing = ({ onFileContent }: UseFileProcessingProps) => 
         } catch (err) {
           console.error('Word extraction failed:', err);
           toast.error('Could not extract Word document content properly');
-          // Provide minimal fallback content
-          text = `Could not fully extract content from ${file.name}. The document may be protected.`;
+          throw new Error(`Word document extraction failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
         }
       } else {
         throw new Error('Unsupported file type');

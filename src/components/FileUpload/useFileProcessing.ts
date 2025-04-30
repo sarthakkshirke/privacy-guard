@@ -51,7 +51,7 @@ export const useFileProcessing = ({ onFileContent }: UseFileProcessingProps) => 
         try {
           text = await readPdfFile(file);
           if (!text || text.trim() === '') {
-            throw new Error('No text content could be extracted from the PDF');
+            throw new Error('PDF appears to be empty or contains no extractable text');
           }
         } catch (err) {
           console.error('PDF extraction failed:', err);

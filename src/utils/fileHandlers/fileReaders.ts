@@ -1,12 +1,8 @@
-
 import mammoth from 'mammoth';
 import * as pdfjsLib from 'pdfjs-dist';
 
-// Configure PDF.js worker with inline worker to avoid CDN loading issues
-const pdfjsWorker = await import('pdfjs-dist/build/pdf.worker.mjs');
-if (typeof window !== 'undefined' && 'PDFWorker' in pdfjsWorker) {
-  pdfjsLib.GlobalWorkerOptions.workerPort = new pdfjsWorker.PDFWorker();
-}
+// Configure PDF.js worker - using a better approach for browser environments
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
 export const readTextFile = async (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {

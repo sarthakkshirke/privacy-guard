@@ -1,8 +1,9 @@
+
 import mammoth from 'mammoth';
 import * as pdfjsLib from 'pdfjs-dist';
 
-// Configure PDF.js worker - using a better approach for browser environments
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+// Configure PDF.js to use built-in worker
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsLib.PDFWorker ? '' : undefined;
 
 export const readTextFile = async (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -37,9 +38,12 @@ export const readPdfFile = async (file: File): Promise<string> => {
       try {
         const typedArray = new Uint8Array(e.target.result as ArrayBuffer);
         
-        // Using PDF.js for browser compatibility
-        const loadingTask = pdfjsLib.getDocument(typedArray);
+        // Use PDF.js with simplified configuration
+        const loadingTask = pdfjsLib.getDocument({ data: typedArray });
+        console.log('PDF loading task created');
+        
         const pdf = await loadingTask.promise;
+        console.log(`PDF loaded successfully with ${pdf.numPages} pages`);
         
         let fullText = '';
         

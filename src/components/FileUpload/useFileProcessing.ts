@@ -76,6 +76,7 @@ export const useFileProcessing = ({ onFileContent }: UseFileProcessingProps) => 
       
       // Process the text content
       if (text) {
+        // Directly call onFileContent with the extracted text
         onFileContent(text);
         toast.success(`Successfully processed "${file.name}"`);
       } else {

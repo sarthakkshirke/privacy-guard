@@ -3,7 +3,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Send, Upload, Paperclip } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { Send, Upload, Paperclip, FileText } from 'lucide-react';
 import { useFileProcessing } from './FileUpload/useFileProcessing';
 import { toast } from 'sonner';
 
@@ -184,13 +185,12 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onAnalyze }) => {
           <Paperclip className="h-4 w-4" />
         </Button>
         <div className="flex-1">
-          <Input
+          <Textarea
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             placeholder="Type your message..."
-            className="w-full"
+            className="w-full min-h-[40px] resize-none"
             onKeyDown={handleKeyPress}
-            multiline
           />
         </div>
         <div className="flex gap-2">

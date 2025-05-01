@@ -10,6 +10,8 @@ import PiiHighlighter from './PiiHighlighter';
 import PiiAnonymizer from './PiiAnonymizer';
 import PromptFlagger from './PromptFlagger';
 import { Shield, FileText } from 'lucide-react';
+import { anonymizePii } from '@/utils/pii';
+import { PiiCategory } from '@/utils/piiDetector';
 
 const Dashboard: React.FC = () => {
   const [text, setText] = useState<string>('');
@@ -17,24 +19,39 @@ const Dashboard: React.FC = () => {
   const [riskScore, setRiskScore] = useState<RiskScore | null>(null);
   const [flaggingResult, setFlaggingResult] = useState<FlaggingResult | null>(null);
   const [showResults, setShowResults] = useState<boolean>(false);
+  const [processingEnabled, setProcessingEnabled] = useState<boolean>(true);
+  const [processingMode, setProcessingMode] = useState<'anonymize' | 'redact' | 'encrypt'>('anonymize');
+  const [selectedCategories, setSelectedCategories] = useState<PiiCategory[]>([
+    'name', 'email', 'phone', 'address', 'id', 'financial', 'health', 'other', 'indian_id', 'indian_financial'
+  ]);
   
-  const handleAnalyzeContent = (content: string) => {
-    setText(content);
-    
-    // Detect PIIs
+  const handleAnalyzeContent = (content: string, processBeforeSending: boolean = false) => {
+    // Process the original text to detect PII
     const detectedPiiResult = detectPii(content);
     setPiiResult(detectedPiiResult);
     
-    // Calculate risk score
+    // Store the original text
+    setText(content);
+    
+    // Process text if enabled
+    let processedContent = content;
+    if (processBeforeSending && processingEnabled) {
+      processedContent = anonymizePii(content, detectedPiiResult.detectedPii, selectedCategories, processingMode);
+    }
+    
+    // Calculate risk score based on original text for accurate assessment
     const calculatedRiskScore = calculateRiskScore(content, detectedPiiResult);
     setRiskScore(calculatedRiskScore);
     
-    // Flag content
+    // Flag content based on original text
     const flagResult = flagContent(content);
     setFlaggingResult(flagResult);
     
     // Show results
     setShowResults(true);
+    
+    // Return the processed content
+    return processedContent;
   };
 
   return (
@@ -54,7 +71,15 @@ const Dashboard: React.FC = () => {
       </header>
       
       <div className="grid grid-cols-1 gap-6">
-        <ChatInterface onAnalyze={handleAnalyzeContent} />
+        <ChatInterface 
+          onAnalyze={handleAnalyzeContent} 
+          processingEnabled={processingEnabled}
+          setProcessingEnabled={setProcessingEnabled}
+          processingMode={processingMode}
+          setProcessingMode={setProcessingMode}
+          selectedCategories={selectedCategories}
+          setSelectedCategories={setSelectedCategories}
+        />
       </div>
       
       {showResults && piiResult && riskScore && flaggingResult && (

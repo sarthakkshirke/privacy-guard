@@ -2,11 +2,16 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Send, Upload, Paperclip, FileText } from 'lucide-react';
+import { Send, Upload, Paperclip, FileText, Shield, Eye, EyeOff, Settings } from 'lucide-react';
 import { useFileProcessing } from './FileUpload/useFileProcessing';
 import { toast } from 'sonner';
+import { Switch } from '@/components/ui/switch';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import PiiProcessingOptions from './PiiProcessingOptions';
+import { PiiCategory } from '@/utils/piiDetector';
+import { detectPii } from '@/utils/piiDetector';
+import { anonymizePii } from '@/utils/pii';
 
 interface ChatMessage {
   id: string;
@@ -16,10 +21,24 @@ interface ChatMessage {
 }
 
 interface ChatInterfaceProps {
-  onAnalyze: (text: string) => void;
+  onAnalyze: (text: string, processBeforeSending?: boolean) => string;
+  processingEnabled: boolean;
+  setProcessingEnabled: (enabled: boolean) => void;
+  processingMode: 'anonymize' | 'redact' | 'encrypt';
+  setProcessingMode: (mode: 'anonymize' | 'redact' | 'encrypt') => void;
+  selectedCategories: PiiCategory[];
+  setSelectedCategories: (categories: PiiCategory[]) => void;
 }
 
-const ChatInterface: React.FC<ChatInterfaceProps> = ({ onAnalyze }) => {
+const ChatInterface: React.FC<ChatInterfaceProps> = ({ 
+  onAnalyze, 
+  processingEnabled, 
+  setProcessingEnabled,
+  processingMode,
+  setProcessingMode,
+  selectedCategories,
+  setSelectedCategories
+}) => {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: '1',
@@ -31,6 +50,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onAnalyze }) => {
   const [inputText, setInputText] = useState('');
   const [showFileUpload, setShowFileUpload] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [configOpen, setConfigOpen] = useState(false);
   
   const {
     file,
@@ -42,7 +62,14 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onAnalyze }) => {
   } = useFileProcessing({ 
     onFileContent: (content) => {
       addMessage('file', `File analyzed: ${file?.name}`);
-      onAnalyze(content);
+      
+      // Process content before sending if enabled
+      const processedContent = onAnalyze(content, processingEnabled);
+      
+      if (processingEnabled) {
+        addMessage('system', 'PII processing was applied to your file before analysis');
+      }
+      
       setShowFileUpload(false);
     }
   });
@@ -61,11 +88,21 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onAnalyze }) => {
   const handleSendMessage = () => {
     if (!inputText.trim()) return;
     
+    // Add the original message from user perspective
     addMessage('user', inputText);
+    
+    // Process the text for PII if enabled
+    const processedText = processingEnabled ? 
+      anonymizePii(inputText, detectPii(inputText).detectedPii, selectedCategories, processingMode) : 
+      inputText;
+    
+    if (processingEnabled && processedText !== inputText) {
+      addMessage('system', 'Your message was processed for privacy before analysis');
+    }
     
     // Process the text after a short delay for UI effect
     setTimeout(() => {
-      onAnalyze(inputText);
+      onAnalyze(inputText, processingEnabled);
       addMessage('bot', 'I\'ve analyzed your text. Here are the results:');
     }, 500);
     
@@ -104,10 +141,71 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onAnalyze }) => {
 
   return (
     <Card className="relative flex flex-col h-[520px] overflow-hidden border shadow-lg rounded-xl bg-gradient-to-b from-white to-gray-50">
-      <div className="bg-primary/5 border-b px-4 py-3">
+      <div className="bg-primary/5 border-b px-4 py-3 flex justify-between items-center">
         <div className="flex items-center space-x-2">
           <div className="h-3 w-3 bg-primary rounded-full animate-pulse-slow"></div>
           <h3 className="font-medium text-sm">Privacy Guardian Assistant</h3>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Dialog open={configOpen} onOpenChange={setConfigOpen}>
+            <DialogTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="flex items-center space-x-1 text-xs h-8"
+              >
+                <Settings className="h-3.5 w-3.5 mr-1" />
+                Privacy Config
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Privacy Configuration</DialogTitle>
+              </DialogHeader>
+              <div className="flex items-center justify-between py-2">
+                <div>
+                  <h4 className="text-sm font-medium">Process PII before sending</h4>
+                  <p className="text-xs text-gray-500">Automatically anonymize sensitive data</p>
+                </div>
+                <Switch 
+                  checked={processingEnabled} 
+                  onCheckedChange={setProcessingEnabled} 
+                  className="ml-2"
+                />
+              </div>
+              
+              {processingEnabled && (
+                <PiiProcessingOptions
+                  selectedMode={processingMode}
+                  selectedCategories={selectedCategories}
+                  onModeChange={setProcessingMode}
+                  onCategoriesChange={setSelectedCategories}
+                />
+              )}
+              
+              <div className="mt-4 flex justify-end">
+                <Button 
+                  onClick={() => setConfigOpen(false)}
+                >
+                  Apply Settings
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+          
+          <div className="flex items-center px-2 py-1 rounded-full bg-primary/10 text-xs">
+            {processingEnabled ? (
+              <>
+                <EyeOff className="h-3 w-3 text-primary mr-1" />
+                <span>PII Protected</span>
+              </>
+            ) : (
+              <>
+                <Eye className="h-3 w-3 text-yellow-500 mr-1" />
+                <span>Raw Text</span>
+              </>
+            )}
+          </div>
         </div>
       </div>
       
@@ -218,6 +316,13 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onAnalyze }) => {
           </Button>
         </div>
       </div>
+      
+      {processingEnabled && (
+        <div className="absolute bottom-[72px] left-0 right-0 px-4 py-2 bg-green-50 border-t border-green-100 text-xs text-green-700 flex items-center justify-center">
+          <Shield className="h-3 w-3 mr-1" />
+          <span>PII protection enabled - Your text will be processed before sending</span>
+        </div>
+      )}
     </Card>
   );
 };

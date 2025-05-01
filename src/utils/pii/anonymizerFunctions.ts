@@ -4,30 +4,52 @@ import { PiiMatch, PiiCategory } from '../piiDetector';
 import { PII_CATEGORIES } from './constants';
 import { encrypt, redactMethods, anonymizeMethods } from './processingMethods';
 
+// Helper function to process PII matches based on selected mode
+const processPiiMatches = (
+  piiMatches: PiiMatch[],
+  selectedCategories: PiiCategory[] = Object.keys(PII_CATEGORIES) as PiiCategory[],
+  mode: 'anonymize' | 'redact' | 'encrypt' = 'anonymize'
+): PiiMatch[] => {
+  // Create a copy of the matches
+  const processedMatches = piiMatches
+    .filter(match => selectedCategories.includes(match.category))
+    .map(match => ({...match}));
+    
+  // Process each match
+  processedMatches.forEach(match => {
+    if (mode === 'redact') {
+      match.anonymized = redactMethods[match.category](match.text);
+    } else if (mode === 'encrypt') {
+      match.anonymized = encrypt(match.text);
+    } else {
+      // Default: anonymize
+      match.anonymized = anonymizeMethods[match.category](match.text);
+    }
+  });
+  
+  return processedMatches;
+};
+
 // Function to encrypt detected PII
 export const encryptPii = (text: string, piiMatches: PiiMatch[], selectedCategories: PiiCategory[]): string => {
   if (piiMatches.length === 0) {
     return text;
   }
 
-  // Sort matches in reverse order (to avoid index shifting when replacing text)
-  const sortedMatches = [...piiMatches]
-    .filter(match => selectedCategories.includes(match.category))
-    .sort((a, b) => b.startIndex - a.startIndex);
+  // Process matches using the common function with encrypt mode
+  const processedMatches = processPiiMatches(piiMatches, selectedCategories, 'encrypt')
+    .sort((a, b) => b.startIndex - a.startIndex); // Sort in reverse order for replacement
   
   let encryptedText = text;
   
   // Replace each PII instance with its encrypted version
-  sortedMatches.forEach(match => {
-    const encrypted = encrypt(match.text);
+  processedMatches.forEach(match => {
+    const encrypted = match.anonymized || encrypt(match.text);
     
     encryptedText = 
       encryptedText.substring(0, match.startIndex) + 
       encrypted + 
       encryptedText.substring(match.endIndex);
-    
-    // Update the match with the encrypted value for reference
-    match.anonymized = encrypted;
   });
   
   return encryptedText;
@@ -44,33 +66,20 @@ export const anonymizePii = (
     return text;
   }
 
-  // Sort matches in reverse order (to avoid index shifting when replacing text)
-  const sortedMatches = [...piiMatches]
-    .filter(match => selectedCategories.includes(match.category))
-    .sort((a, b) => b.startIndex - a.startIndex);
+  // Process matches using the common function
+  const processedMatches = processPiiMatches(piiMatches, selectedCategories, mode)
+    .sort((a, b) => b.startIndex - a.startIndex); // Sort in reverse order for replacement
   
   let anonymizedText = text;
   
   // Replace each PII instance with its processed version
-  sortedMatches.forEach(match => {
-    let processed = match.text;
-    
-    if (mode === 'redact') {
-      processed = redactMethods[match.category](match.text);
-    } else if (mode === 'encrypt') {
-      processed = encrypt(match.text);
-    } else {
-      // Default: anonymize
-      processed = anonymizeMethods[match.category](match.text);
-    }
+  processedMatches.forEach(match => {
+    const processed = match.anonymized || match.text;
     
     anonymizedText = 
       anonymizedText.substring(0, match.startIndex) + 
       processed + 
       anonymizedText.substring(match.endIndex);
-    
-    // Update the match with the processed value for reference
-    match.anonymized = processed;
   });
   
   return anonymizedText;

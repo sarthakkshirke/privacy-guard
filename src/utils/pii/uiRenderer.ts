@@ -20,7 +20,7 @@ export const generateAnonymizedHighlightedText = (
     .filter(match => selectedCategories.includes(match.category))
     .sort((a, b) => a.startIndex - b.startIndex);
   
-  // First process all PIIs based on selected mode
+  // First process all PIIs based on selected mode - this ensures consistency with anonymizePii
   sortedMatches.forEach(match => {
     if (mode === 'redact') {
       match.anonymized = redactMethods[match.category](match.text);
@@ -56,7 +56,7 @@ export const generateAnonymizedHighlightedText = (
           className: `pii-highlight pii-${match.category}`,
           title: `Original: ${match.text}\nType: ${match.category}`
         },
-        match.anonymized
+        match.anonymized || match.text
       )
     );
 

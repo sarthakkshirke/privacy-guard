@@ -17,7 +17,9 @@ interface ChatMessage {
   id: string;
   type: 'user' | 'bot' | 'file' | 'system';
   content: string;
+  originalContent?: string; // Original content before processing
   timestamp: Date;
+  processed?: boolean; // Flag indicating if the content has been processed
 }
 
 interface ChatInterfaceProps {
@@ -61,10 +63,14 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     handleUpload
   } = useFileProcessing({ 
     onFileContent: (content) => {
-      addMessage('file', `File analyzed: ${file?.name}`);
-      
       // Process content before sending if enabled
-      const processedContent = onAnalyze(content, processingEnabled);
+      const processedContent = processingEnabled ? 
+        anonymizePii(content, detectPii(content).detectedPii, selectedCategories, processingMode) :
+        content;
+      
+      addMessage('file', processingEnabled ? processedContent : content, content, processingEnabled);
+      
+      onAnalyze(content, processingEnabled);
       
       if (processingEnabled) {
         addMessage('system', 'PII processing was applied to your file before analysis');
@@ -74,12 +80,19 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     }
   });
 
-  const addMessage = (type: 'user' | 'bot' | 'file' | 'system', content: string) => {
+  const addMessage = (
+    type: 'user' | 'bot' | 'file' | 'system', 
+    content: string,
+    originalContent?: string,
+    processed?: boolean
+  ) => {
     const newMessage: ChatMessage = {
       id: Date.now().toString(),
       type,
       content,
-      timestamp: new Date()
+      originalContent,
+      timestamp: new Date(),
+      processed
     };
     
     setMessages((prev) => [...prev, newMessage]);
@@ -89,16 +102,13 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     if (!inputText.trim()) return;
     
     // Add the original message from user perspective
-    addMessage('user', inputText);
-    
-    // Process the text for PII if enabled
+    const piiDetectionResult = detectPii(inputText);
     const processedText = processingEnabled ? 
-      anonymizePii(inputText, detectPii(inputText).detectedPii, selectedCategories, processingMode) : 
+      anonymizePii(inputText, piiDetectionResult.detectedPii, selectedCategories, processingMode) : 
       inputText;
     
-    if (processingEnabled && processedText !== inputText) {
-      addMessage('system', 'Your message was processed for privacy before analysis');
-    }
+    // Add message with either processed or original text depending on settings
+    addMessage('user', processedText, inputText, processingEnabled);
     
     // Process the text after a short delay for UI effect
     setTimeout(() => {
@@ -225,6 +235,12 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
               }`}
             >
               {message.content}
+              {message.processed && message.type === 'user' && (
+                <div className="mt-1.5 pt-1.5 border-t border-primary/10 text-xs flex items-center">
+                  <Shield className="h-3 w-3 mr-1 opacity-70" />
+                  <span className="opacity-70">PII protected</span>
+                </div>
+              )}
             </div>
           </div>
         ))}

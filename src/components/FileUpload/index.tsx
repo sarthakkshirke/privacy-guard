@@ -10,6 +10,8 @@ interface FileUploadProps {
   onFileContent: (content: string) => void;
 }
 
+// This component is now used internally by ChatInterface
+// It's kept here for compatibility with existing code
 const FileUpload: React.FC<FileUploadProps> = ({ onFileContent }) => {
   const {
     file,

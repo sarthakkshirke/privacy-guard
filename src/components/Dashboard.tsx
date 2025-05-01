@@ -1,15 +1,14 @@
 
 import React, { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import TextInput from './TextInput';
-import FileUpload from './FileUpload';
-import PiiHighlighter from './PiiHighlighter';
-import RiskScorer from './RiskScorer';
-import PiiAnonymizer from './PiiAnonymizer';
-import PromptFlagger from './PromptFlagger';
 import { detectPii, PiiResult } from '@/utils/piiDetector';
 import { calculateRiskScore, RiskScore } from '@/utils/riskScorer';
 import { flagContent, FlaggingResult } from '@/utils/contentFlagger';
+import ChatInterface from './ChatInterface';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import RiskScorer from './RiskScorer';
+import PiiHighlighter from './PiiHighlighter';
+import PiiAnonymizer from './PiiAnonymizer';
+import PromptFlagger from './PromptFlagger';
 import { Shield, FileText } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
@@ -49,31 +48,12 @@ const Dashboard: React.FC = () => {
         </p>
       </header>
       
-      <Tabs defaultValue="text">
-        <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-6">
-          <TabsTrigger value="text" className="flex items-center gap-2">
-            <Shield className="h-4 w-4" />
-            Text Input
-          </TabsTrigger>
-          <TabsTrigger value="file" className="flex items-center gap-2">
-            <FileText className="h-4 w-4" />
-            File Upload
-          </TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="text">
-          <TextInput onAnalyze={handleAnalyzeContent} />
-        </TabsContent>
-        
-        <TabsContent value="file">
-          <FileUpload onFileContent={handleAnalyzeContent} />
-        </TabsContent>
-      </Tabs>
+      <ChatInterface onAnalyze={handleAnalyzeContent} />
       
       {showResults && piiResult && riskScore && flaggingResult && (
         <div className="space-y-8">
           <div>
-            <h2 className="text-2xl font-bold mb-4">Preview & Risk Summary</h2>
+            <h2 className="text-2xl font-bold mb-4">Privacy Analysis Results</h2>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <PiiHighlighter text={text} piiResult={piiResult} />
               <RiskScorer riskScore={riskScore} />

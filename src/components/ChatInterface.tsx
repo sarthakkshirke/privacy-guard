@@ -103,7 +103,14 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onAnalyze }) => {
   };
 
   return (
-    <Card className="relative flex flex-col h-[500px] overflow-hidden border-2 shadow-md">
+    <Card className="relative flex flex-col h-[520px] overflow-hidden border shadow-lg rounded-xl bg-gradient-to-b from-white to-gray-50">
+      <div className="bg-primary/5 border-b px-4 py-3">
+        <div className="flex items-center space-x-2">
+          <div className="h-3 w-3 bg-primary rounded-full animate-pulse-slow"></div>
+          <h3 className="font-medium text-sm">Privacy Guardian Assistant</h3>
+        </div>
+      </div>
+      
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((message) => (
           <div 
@@ -113,10 +120,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onAnalyze }) => {
             <div 
               className={`max-w-[80%] rounded-lg p-3 ${
                 message.type === 'user' 
-                  ? 'bg-primary text-primary-foreground' 
+                  ? 'bg-primary text-primary-foreground shadow-sm' 
                   : message.type === 'system'
                   ? 'bg-muted text-muted-foreground text-center w-full text-sm italic'
-                  : 'bg-secondary text-secondary-foreground'
+                  : 'bg-secondary text-secondary-foreground shadow-sm'
               }`}
             >
               {message.content}
@@ -130,7 +137,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onAnalyze }) => {
         <div className="p-4 bg-gray-50 border-t">
           <div className="space-y-2">
             {!file ? (
-              <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-4 bg-gray-50 hover:bg-gray-100 cursor-pointer">
+              <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-4 bg-gray-50 hover:bg-gray-100 cursor-pointer transition-colors">
                 <input
                   type="file"
                   id="file-upload"
@@ -144,15 +151,15 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onAnalyze }) => {
                   accept=".txt,.pdf,.doc,.docx"
                 />
                 <label htmlFor="file-upload" className="cursor-pointer flex flex-col items-center">
-                  <Upload className="h-8 w-8 text-gray-400 mb-2" />
+                  <Upload className="h-8 w-8 text-primary/70 mb-2" />
                   <p className="text-sm font-medium">Click to upload or drag and drop</p>
                   <p className="text-xs text-gray-500 mt-1">TXT, PDF, DOC up to 10MB</p>
                 </label>
               </div>
             ) : (
-              <div className="flex items-center justify-between bg-gray-100 p-3 rounded-lg">
+              <div className="flex items-center justify-between bg-white p-3 rounded-lg border shadow-sm">
                 <div className="flex items-center space-x-3">
-                  <FileText className="h-6 w-6 text-blue-600" />
+                  <FileText className="h-6 w-6 text-primary" />
                   <div>
                     <p className="text-sm font-medium truncate max-w-[200px]">{file.name}</p>
                     <p className="text-xs text-gray-500">{(file.size / 1024).toFixed(1)} KB</p>
@@ -175,12 +182,12 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onAnalyze }) => {
         </div>
       )}
 
-      <div className="p-4 border-t flex gap-2 items-end">
+      <div className="p-4 border-t bg-white flex gap-2 items-end">
         <Button 
           variant="outline" 
           size="icon" 
           onClick={toggleFileUpload} 
-          className="flex-shrink-0"
+          className="flex-shrink-0 text-gray-600 hover:text-primary hover:border-primary transition-colors"
         >
           <Paperclip className="h-4 w-4" />
         </Button>
@@ -189,7 +196,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onAnalyze }) => {
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             placeholder="Type your message..."
-            className="w-full min-h-[40px] resize-none"
+            className="w-full min-h-[40px] resize-none focus:ring-primary"
             onKeyDown={handleKeyPress}
           />
         </div>
@@ -198,7 +205,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onAnalyze }) => {
             variant="outline" 
             size="sm" 
             onClick={handleSampleText}
-            className="flex-shrink-0"
+            className="flex-shrink-0 text-xs"
           >
             Sample
           </Button>

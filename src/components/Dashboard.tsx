@@ -38,9 +38,14 @@ const Dashboard: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto p-4 md:p-6 space-y-8">
-      <header className="text-center mb-8">
-        <h1 className="text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent mb-2">
+    <div className="container mx-auto p-4 md:p-6 space-y-8 max-w-7xl">
+      <header className="text-center mb-8 bg-gradient-to-r from-white to-gray-50 rounded-xl p-6 shadow-sm border">
+        <div className="flex justify-center mb-4">
+          <div className="h-12 w-12 bg-primary/10 rounded-full flex items-center justify-center">
+            <Shield className="h-6 w-6 text-primary" />
+          </div>
+        </div>
+        <h1 className="text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-indigo-500 bg-clip-text text-transparent mb-2">
           Privacy Guardian
         </h1>
         <p className="text-gray-500 max-w-md mx-auto">
@@ -48,20 +53,28 @@ const Dashboard: React.FC = () => {
         </p>
       </header>
       
-      <ChatInterface onAnalyze={handleAnalyzeContent} />
+      <div className="grid grid-cols-1 gap-6">
+        <ChatInterface onAnalyze={handleAnalyzeContent} />
+      </div>
       
       {showResults && piiResult && riskScore && flaggingResult && (
-        <div className="space-y-8">
-          <div>
-            <h2 className="text-2xl font-bold mb-4">Privacy Analysis Results</h2>
+        <div className="space-y-8 animate-fade-in">
+          <div className="bg-white rounded-xl border shadow-sm p-6">
+            <div className="flex items-center space-x-2 mb-4">
+              <div className="h-2 w-2 bg-primary rounded-full"></div>
+              <h2 className="text-xl font-bold">Privacy Analysis Results</h2>
+            </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <PiiHighlighter text={text} piiResult={piiResult} />
               <RiskScorer riskScore={riskScore} />
             </div>
           </div>
           
-          <div>
-            <h2 className="text-2xl font-bold mb-4">Privacy Tools</h2>
+          <div className="bg-white rounded-xl border shadow-sm p-6">
+            <div className="flex items-center space-x-2 mb-4">
+              <div className="h-2 w-2 bg-accent rounded-full"></div>
+              <h2 className="text-xl font-bold">Privacy Tools</h2>
+            </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <PiiAnonymizer text={text} detectedPii={piiResult.detectedPii} />
               <PromptFlagger flaggingResult={flaggingResult} />

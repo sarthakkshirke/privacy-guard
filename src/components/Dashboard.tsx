@@ -1,8 +1,9 @@
+
 import React, { useState } from 'react';
 import { detectPii, PiiResult } from '@/utils/piiDetector';
 import { calculateRiskScore, RiskScore } from '@/utils/riskScorer';
 import { flagContent, FlaggingResult } from '@/utils/contentFlagger';
-import ChatInterface from './ChatInterface';
+import ChatInterface from './Chat';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import RiskScorer from './RiskScorer';
 import PiiHighlighter from './PiiHighlighter';

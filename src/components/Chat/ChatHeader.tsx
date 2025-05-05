@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Settings, EyeOff, Eye } from 'lucide-react';
+import { Settings, EyeOff, Eye, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';

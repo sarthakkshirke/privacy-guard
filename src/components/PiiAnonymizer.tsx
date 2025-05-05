@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { anonymizePii, generateAnonymizedHighlightedText } from '@/utils/pii';
@@ -11,23 +10,46 @@ import PiiProcessingOptions, { ProcessingMode } from './PiiProcessingOptions';
 interface PiiAnonymizerProps {
   text: string;
   detectedPii: PiiMatch[];
+  initialMode?: ProcessingMode;
+  initialCategories?: PiiCategory[];
 }
 
-const PiiAnonymizer: React.FC<PiiAnonymizerProps> = ({ text, detectedPii }) => {
+const PiiAnonymizer: React.FC<PiiAnonymizerProps> = ({ 
+  text, 
+  detectedPii,
+  initialMode = 'anonymize',
+  initialCategories
+}) => {
   const [copied, setCopied] = useState(false);
-  const [processingMode, setProcessingMode] = useState<ProcessingMode>('anonymize');
-  const [selectedCategories, setSelectedCategories] = useState<PiiCategory[]>(Object.keys({
-    name: 'name',
-    email: 'email',
-    phone: 'phone',
-    address: 'address',
-    id: 'id',
-    financial: 'financial',
-    health: 'health',
-    other: 'other',
-    indian_id: 'indian_id',
-    indian_financial: 'indian_financial'
-  }) as PiiCategory[]);
+  const [processingMode, setProcessingMode] = useState<ProcessingMode>(initialMode);
+  const [selectedCategories, setSelectedCategories] = useState<PiiCategory[]>(
+    initialCategories || Object.keys({
+      name: 'name',
+      email: 'email',
+      phone: 'phone',
+      address: 'address',
+      id: 'id',
+      financial: 'financial',
+      health: 'health',
+      other: 'other',
+      indian_id: 'indian_id',
+      indian_financial: 'indian_financial'
+    }) as PiiCategory[]
+  );
+  
+  // Keep processing mode in sync with initial mode when it changes
+  useEffect(() => {
+    if (initialMode) {
+      setProcessingMode(initialMode);
+    }
+  }, [initialMode]);
+
+  // Keep selected categories in sync with initialCategories when they change
+  useEffect(() => {
+    if (initialCategories) {
+      setSelectedCategories(initialCategories);
+    }
+  }, [initialCategories]);
   
   const processedText = anonymizePii(text, detectedPii, selectedCategories, processingMode);
   

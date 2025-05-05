@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -20,6 +19,7 @@ interface ChatMessage {
   originalContent?: string; // Original content before processing
   timestamp: Date;
   processed?: boolean; // Flag indicating if the content has been processed
+  piiMatches?: any[]; // Store PII matches to ensure consistency
 }
 
 interface ChatInterfaceProps {
@@ -63,12 +63,16 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     handleUpload
   } = useFileProcessing({ 
     onFileContent: (content) => {
+      // Detect PII first to get consistent matches
+      const piiDetectionResult = detectPii(content);
+      
       // Process content before sending if enabled
       const processedContent = processingEnabled ? 
-        anonymizePii(content, detectPii(content).detectedPii, selectedCategories, processingMode) :
+        anonymizePii(content, piiDetectionResult.detectedPii, selectedCategories, processingMode) :
         content;
       
-      addMessage('file', processingEnabled ? processedContent : content, content, processingEnabled);
+      addMessage('file', processingEnabled ? processedContent : content, content, processingEnabled, 
+        processingEnabled ? piiDetectionResult.detectedPii : undefined);
       
       onAnalyze(content, processingEnabled);
       
@@ -84,7 +88,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     type: 'user' | 'bot' | 'file' | 'system', 
     content: string,
     originalContent?: string,
-    processed?: boolean
+    processed?: boolean,
+    piiMatches?: any[]
   ) => {
     const newMessage: ChatMessage = {
       id: Date.now().toString(),
@@ -92,7 +97,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       content,
       originalContent,
       timestamp: new Date(),
-      processed
+      processed,
+      piiMatches
     };
     
     setMessages((prev) => [...prev, newMessage]);
@@ -101,14 +107,17 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   const handleSendMessage = () => {
     if (!inputText.trim()) return;
     
-    // Add the original message from user perspective
+    // Detect PII first to get consistent matches
     const piiDetectionResult = detectPii(inputText);
+    
+    // Process text if enabled
     const processedText = processingEnabled ? 
       anonymizePii(inputText, piiDetectionResult.detectedPii, selectedCategories, processingMode) : 
       inputText;
     
     // Add message with either processed or original text depending on settings
-    addMessage('user', processedText, inputText, processingEnabled);
+    addMessage('user', processedText, inputText, processingEnabled, 
+      processingEnabled ? piiDetectionResult.detectedPii : undefined);
     
     // Process the text after a short delay for UI effect
     setTimeout(() => {

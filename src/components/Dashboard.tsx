@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { detectPii, PiiResult } from '@/utils/piiDetector';
 import { calculateRiskScore, RiskScore } from '@/utils/riskScorer';
@@ -33,10 +32,10 @@ const Dashboard: React.FC = () => {
     // Store the original text
     setText(content);
     
-    // Process text if enabled
-    let processedContent = content;
+    // Store detected PII with any preprocessing done
     if (processBeforeSending && processingEnabled) {
-      processedContent = anonymizePii(content, detectedPiiResult.detectedPii, selectedCategories, processingMode);
+      // This call processes and stores the anonymized values in the PII matches
+      anonymizePii(content, detectedPiiResult.detectedPii, selectedCategories, processingMode);
     }
     
     // Calculate risk score based on original text for accurate assessment
@@ -50,8 +49,8 @@ const Dashboard: React.FC = () => {
     // Show results
     setShowResults(true);
     
-    // Return the processed content
-    return processedContent;
+    // Return the original content - processing is now handled internally
+    return content;
   };
 
   return (
@@ -101,7 +100,12 @@ const Dashboard: React.FC = () => {
               <h2 className="text-xl font-bold">Privacy Tools</h2>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <PiiAnonymizer text={text} detectedPii={piiResult.detectedPii} />
+              <PiiAnonymizer 
+                text={text} 
+                detectedPii={piiResult.detectedPii}
+                initialMode={processingMode}
+                initialCategories={selectedCategories} 
+              />
               <PromptFlagger flaggingResult={flaggingResult} />
             </div>
           </div>

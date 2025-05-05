@@ -22,13 +22,16 @@ export const generateAnonymizedHighlightedText = (
   
   // First process all PIIs based on selected mode - this ensures consistency with anonymizePii
   sortedMatches.forEach(match => {
-    if (mode === 'redact') {
-      match.anonymized = redactMethods[match.category](match.text);
-    } else if (mode === 'encrypt') {
-      match.anonymized = encrypt(match.text);
-    } else {
-      // Default: anonymize
-      match.anonymized = anonymizeMethods[match.category](match.text);
+    // Only process if anonymized value isn't already set
+    if (!match.anonymized) {
+      if (mode === 'redact') {
+        match.anonymized = redactMethods[match.category](match.text);
+      } else if (mode === 'encrypt') {
+        match.anonymized = encrypt(match.text);
+      } else {
+        // Default: anonymize
+        match.anonymized = anonymizeMethods[match.category](match.text);
+      }
     }
   });
 

@@ -29,50 +29,44 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ messages }) => {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto py-6 px-4 space-y-6">
+    <div className="flex-1 overflow-y-auto">
       {messages.map((message) => (
         <div 
           key={message.id} 
-          className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'} mb-4 gap-3`}
+          className={`px-4 py-6 ${message.type === 'user' ? 'bg-white' : 'bg-gray-50'}`}
         >
-          {message.type === 'bot' && (
-            <div className="h-8 w-8 rounded-sm bg-chatgpt-assistant/10 flex items-center justify-center mr-1 flex-shrink-0">
-              <Shield className="h-5 w-5 text-chatgpt-assistant" />
-            </div>
-          )}
-          
-          <div 
-            className={`max-w-[80%] px-4 py-3.5 rounded-2xl ${
-              message.type === 'user' 
-                ? 'bg-chatgpt-user text-white' 
-                : message.type === 'system'
-                ? 'bg-muted text-muted-foreground text-center w-full text-sm italic'
-                : 'bg-gray-100 dark:bg-gray-800 text-foreground'
-            }`}
-          >
-            <div className="text-sm">{message.content}</div>
+          <div className="max-w-3xl mx-auto flex gap-4">
+            {message.type === 'bot' && (
+              <div className="w-7 h-7 rounded-sm bg-teal-600 flex items-center justify-center flex-shrink-0">
+                <Shield className="h-4 w-4 text-white" />
+              </div>
+            )}
             
-            {message.type !== 'system' && (
-              <div className="mt-1 text-xs opacity-70">
-                {format(new Date(message.timestamp), 'h:mm a')}
-                
-                {message.processed && message.type === 'user' && (
-                  <span className="ml-2 flex items-center">
-                    <Shield className="h-3 w-3 mr-1 inline" />
-                    <span>Protected</span>
-                  </span>
-                )}
+            <div className="flex-1 min-w-0 whitespace-pre-wrap">
+              {message.content}
+              
+              {message.type !== 'system' && (
+                <div className="mt-1.5 text-xs text-gray-500">
+                  {format(new Date(message.timestamp), 'h:mm a')}
+                  
+                  {message.processed && message.type === 'user' && (
+                    <span className="ml-2 flex items-center text-teal-600">
+                      <Shield className="h-3 w-3 mr-1 inline" />
+                      <span>Protected</span>
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+            
+            {message.type === 'user' && (
+              <div className="w-7 h-7 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-600" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                </svg>
               </div>
             )}
           </div>
-          
-          {message.type === 'user' && (
-            <div className="h-8 w-8 rounded-full bg-chatgpt-user/20 flex items-center justify-center ml-1 flex-shrink-0">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-chatgpt-user" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-              </svg>
-            </div>
-          )}
         </div>
       ))}
       <div ref={messagesEndRef} />

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
@@ -123,7 +122,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   };
 
   return (
-    <Card className="relative flex flex-col h-[520px] overflow-hidden border shadow-lg rounded-xl bg-white">
+    <Card className="relative flex flex-col h-[520px] overflow-hidden border border-gray-200 shadow-md rounded-lg bg-white">
       <ChatHeader
         processingEnabled={processingEnabled}
         setProcessingEnabled={setProcessingEnabled}

@@ -53,22 +53,12 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
-				sidebar: {
-					DEFAULT: 'hsl(var(--sidebar-background))',
-					foreground: 'hsl(var(--sidebar-foreground))',
-					primary: 'hsl(var(--sidebar-primary))',
-					'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
-					accent: 'hsl(var(--sidebar-accent))',
-					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
-					border: 'hsl(var(--sidebar-border))',
-					ring: 'hsl(var(--sidebar-ring))'
-				},
 				chatgpt: {
 					user: '#19C37D',
-					assistant: '#1EAEDB',
+					assistant: '#10a37f',
 					background: '#FFFFFF',
 					sidebar: '#202123',
-					input: '#F1F1F1',
+					input: '#F7F7F8',
 				},
 				// PII category colors
 				pii: {

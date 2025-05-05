@@ -30,14 +30,13 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
   setConfigOpen
 }) => {
   return (
-    <div className="border-b p-3 flex justify-between items-center bg-chatgpt-background">
+    <div className="sticky top-0 z-10 border-b border-gray-100 bg-white p-3 flex justify-between items-center">
       <div className="flex items-center gap-2">
-        <div className="w-8 h-8 rounded-full bg-chatgpt-assistant/10 flex items-center justify-center">
-          <Shield className="h-4 w-4 text-chatgpt-assistant" />
+        <div className="w-8 h-8 rounded-full bg-teal-600/10 flex items-center justify-center">
+          <Shield className="h-4 w-4 text-teal-600" />
         </div>
         <div className="flex flex-col justify-center">
-          <h3 className="font-semibold text-sm">Privacy Guardian</h3>
-          <div className="text-xs text-muted-foreground">AI Assistant</div>
+          <h3 className="font-medium text-base text-gray-800">Privacy Guardian</h3>
         </div>
       </div>
       
@@ -47,7 +46,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
             <Button 
               variant="ghost" 
               size="sm" 
-              className="text-xs h-8 flex items-center gap-1"
+              className="text-xs h-8 flex items-center gap-1 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
             >
               <Settings className="h-3.5 w-3.5" />
               Settings
@@ -55,17 +54,17 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
           </DialogTrigger>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Privacy Configuration</DialogTitle>
+              <DialogTitle className="text-gray-800">Privacy Configuration</DialogTitle>
             </DialogHeader>
             <div className="flex items-center justify-between py-2">
               <div>
-                <h4 className="text-sm font-medium">Process PII before sending</h4>
+                <h4 className="text-sm font-medium text-gray-800">Process PII before sending</h4>
                 <p className="text-xs text-gray-500">Automatically anonymize sensitive data</p>
               </div>
               <Switch 
                 checked={processingEnabled} 
-                onCheckedChange={setProcessingEnabled} 
-                className="ml-2"
+                onCheckedChange={setProcessingEnabled}
+                className="data-[state=checked]:bg-teal-600"
               />
             </div>
             
@@ -81,7 +80,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
             <div className="mt-4 flex justify-end">
               <Button 
                 onClick={() => setConfigOpen(false)}
-                className="bg-chatgpt-user hover:bg-chatgpt-user/90"
+                className="bg-teal-600 hover:bg-teal-700 text-white"
               >
                 Apply Settings
               </Button>
@@ -91,8 +90,8 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
         
         <div className={`flex items-center px-3 py-1.5 rounded-full text-xs font-medium ${
           processingEnabled 
-            ? 'bg-green-100 text-green-700' 
-            : 'bg-amber-100 text-amber-700'
+            ? 'bg-teal-50 text-teal-700' 
+            : 'bg-amber-50 text-amber-700'
         }`}>
           {processingEnabled ? (
             <>

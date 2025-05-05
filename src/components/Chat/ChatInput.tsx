@@ -32,39 +32,42 @@ const ChatInput: React.FC<ChatInputProps> = ({
   };
 
   return (
-    <div className="p-4 border-t bg-white flex gap-2 items-end">
-      <Button 
-        variant="outline" 
-        size="icon" 
-        onClick={toggleFileUpload} 
-        className="flex-shrink-0 text-gray-600 hover:text-primary hover:border-primary transition-colors"
-      >
-        <Paperclip className="h-4 w-4" />
-      </Button>
-      <div className="flex-1">
+    <div className="p-3 border-t bg-background flex gap-2 items-end relative">
+      <div className="flex-1 relative border rounded-lg bg-background">
         <Textarea
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
-          placeholder="Type your message..."
-          className="w-full min-h-[40px] resize-none focus:ring-primary"
+          placeholder="Message Privacy Guardian..."
+          className="min-h-[48px] max-h-[200px] p-3 pr-12 resize-none focus:ring-0 focus:ring-offset-0 border-none shadow-none"
           onKeyDown={handleKeyPress}
         />
+        <Button 
+          onClick={handleSend} 
+          disabled={!inputText.trim()} 
+          size="icon"
+          className="absolute right-2 bottom-1.5 h-8 w-8 bg-primary rounded-md hover:bg-primary/90"
+        >
+          <Send className="h-4 w-4 text-primary-foreground" />
+        </Button>
       </div>
-      <div className="flex gap-2">
+      
+      <div className="flex gap-1.5">
+        <Button 
+          variant="outline" 
+          size="icon" 
+          onClick={toggleFileUpload} 
+          className="flex-shrink-0 text-muted-foreground h-10 w-10 rounded-md hover:text-primary hover:border-primary transition-colors"
+        >
+          <Paperclip className="h-4 w-4" />
+        </Button>
+        
         <Button 
           variant="outline" 
           size="sm" 
           onClick={onSampleText}
-          className="flex-shrink-0 text-xs"
+          className="flex-shrink-0 text-xs h-10 whitespace-nowrap"
         >
-          Sample
-        </Button>
-        <Button 
-          onClick={handleSend} 
-          disabled={!inputText.trim()} 
-          className="flex-shrink-0"
-        >
-          <Send className="h-4 w-4" />
+          Sample Text
         </Button>
       </div>
     </div>

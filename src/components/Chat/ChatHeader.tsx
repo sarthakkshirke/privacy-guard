@@ -30,21 +30,27 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
   setConfigOpen
 }) => {
   return (
-    <div className="bg-primary/5 border-b px-4 py-3 flex justify-between items-center">
-      <div className="flex items-center space-x-2">
-        <div className="h-3 w-3 bg-primary rounded-full animate-pulse-slow"></div>
-        <h3 className="font-medium text-sm">Privacy Guardian Assistant</h3>
+    <div className="border-b p-3 flex justify-between items-center bg-background">
+      <div className="flex items-center gap-2">
+        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+          <Shield className="h-4 w-4 text-primary" />
+        </div>
+        <div className="flex flex-col justify-center">
+          <h3 className="font-semibold text-sm">Privacy Guardian</h3>
+          <div className="text-xs text-muted-foreground">AI Assistant</div>
+        </div>
       </div>
-      <div className="flex items-center space-x-2">
+      
+      <div className="flex items-center gap-2">
         <Dialog open={configOpen} onOpenChange={setConfigOpen}>
           <DialogTrigger asChild>
             <Button 
               variant="ghost" 
               size="sm" 
-              className="flex items-center space-x-1 text-xs h-8"
+              className="text-xs h-8 flex items-center gap-1"
             >
-              <Settings className="h-3.5 w-3.5 mr-1" />
-              Privacy Config
+              <Settings className="h-3.5 w-3.5" />
+              Settings
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-md">
@@ -82,15 +88,19 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
           </DialogContent>
         </Dialog>
         
-        <div className="flex items-center px-2 py-1 rounded-full bg-primary/10 text-xs">
+        <div className={`flex items-center px-3 py-1.5 rounded-full text-xs font-medium ${
+          processingEnabled 
+            ? 'bg-green-100 text-green-700' 
+            : 'bg-amber-100 text-amber-700'
+        }`}>
           {processingEnabled ? (
             <>
-              <EyeOff className="h-3 w-3 text-primary mr-1" />
-              <span>PII Protected</span>
+              <EyeOff className="h-3 w-3 mr-1.5" />
+              <span>Protected</span>
             </>
           ) : (
             <>
-              <Eye className="h-3 w-3 text-yellow-500 mr-1" />
+              <Eye className="h-3 w-3 mr-1.5" />
               <span>Raw Text</span>
             </>
           )}

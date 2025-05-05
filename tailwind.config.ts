@@ -63,6 +63,13 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
+				chatgpt: {
+					user: '#19C37D',
+					assistant: '#1EAEDB',
+					background: '#FFFFFF',
+					sidebar: '#202123',
+					input: '#F1F1F1',
+				},
 				// PII category colors
 				pii: {
 					name: '#ea384c',

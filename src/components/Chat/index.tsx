@@ -123,7 +123,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   };
 
   return (
-    <Card className="relative flex flex-col h-[520px] overflow-hidden border shadow-lg rounded-xl bg-gradient-to-b from-white to-gray-50">
+    <Card className="relative flex flex-col h-[520px] overflow-hidden border shadow-lg rounded-xl bg-white">
       <ChatHeader
         processingEnabled={processingEnabled}
         setProcessingEnabled={setProcessingEnabled}

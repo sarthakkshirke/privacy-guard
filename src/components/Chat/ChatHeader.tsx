@@ -30,10 +30,10 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
   setConfigOpen
 }) => {
   return (
-    <div className="border-b p-3 flex justify-between items-center bg-background">
+    <div className="border-b p-3 flex justify-between items-center bg-chatgpt-background">
       <div className="flex items-center gap-2">
-        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-          <Shield className="h-4 w-4 text-primary" />
+        <div className="w-8 h-8 rounded-full bg-chatgpt-assistant/10 flex items-center justify-center">
+          <Shield className="h-4 w-4 text-chatgpt-assistant" />
         </div>
         <div className="flex flex-col justify-center">
           <h3 className="font-semibold text-sm">Privacy Guardian</h3>
@@ -81,6 +81,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
             <div className="mt-4 flex justify-end">
               <Button 
                 onClick={() => setConfigOpen(false)}
+                className="bg-chatgpt-user hover:bg-chatgpt-user/90"
               >
                 Apply Settings
               </Button>

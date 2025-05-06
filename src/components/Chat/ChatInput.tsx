@@ -3,19 +3,25 @@ import React, { useState } from 'react';
 import { Paperclip, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import PrivacyPrompt from './PrivacyPrompt';
 
 interface ChatInputProps {
   onSendMessage: (text: string) => void;
   onSampleText: () => void;
   toggleFileUpload: () => void;
+  privacyEnabled: boolean;
+  onPrivacyToggle: () => void;
 }
 
 const ChatInput: React.FC<ChatInputProps> = ({ 
   onSendMessage, 
   onSampleText, 
-  toggleFileUpload 
+  toggleFileUpload,
+  privacyEnabled,
+  onPrivacyToggle
 }) => {
   const [inputText, setInputText] = useState('');
+  const [showPrivacyPrompt, setShowPrivacyPrompt] = useState(true);
 
   const handleSend = () => {
     if (inputText.trim()) {
@@ -33,6 +39,12 @@ const ChatInput: React.FC<ChatInputProps> = ({
 
   return (
     <div className="p-3 border-t flex gap-2 items-end relative bg-white">
+      <PrivacyPrompt 
+        visible={showPrivacyPrompt} 
+        enabled={privacyEnabled}
+        onToggle={onPrivacyToggle}
+      />
+      
       <div className="flex-1 relative">
         <Textarea
           value={inputText}

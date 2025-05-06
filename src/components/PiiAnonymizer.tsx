@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -69,6 +70,19 @@ const PiiAnonymizer: React.FC<PiiAnonymizerProps> = ({
     setSelectedCategories(categories);
   };
 
+  // Define card titles and descriptions based on mode
+  const cardTitles = {
+    anonymize: 'Anonymized Version',
+    redact: 'Redacted Version',
+    encrypt: 'Encrypted Version'
+  };
+  
+  const cardDescriptions = {
+    anonymize: 'Using synthetic data to preserve context while protecting information',
+    redact: 'Completely hiding sensitive information with redaction markers',
+    encrypt: 'Securely transforming sensitive information with encryption'
+  };
+
   return (
     <div className="space-y-6">
       <PiiProcessingOptions
@@ -81,14 +95,10 @@ const PiiAnonymizer: React.FC<PiiAnonymizerProps> = ({
       <Card className="w-full">
         <CardHeader>
           <CardTitle>
-            {processingMode === 'anonymize' && 'Anonymized Version'}
-            {processingMode === 'redact' && 'Redacted Version'}
-            {processingMode === 'encrypt' && 'Encrypted Version'}
+            {cardTitles[processingMode]}
           </CardTitle>
           <CardDescription>
-            {processingMode === 'anonymize' && 'Using synthetic data to preserve context while protecting information'}
-            {processingMode === 'redact' && 'Completely hiding sensitive information with redaction markers'}
-            {processingMode === 'encrypt' && 'Securely transforming sensitive information with encryption'}
+            {cardDescriptions[processingMode]}
           </CardDescription>
         </CardHeader>
         

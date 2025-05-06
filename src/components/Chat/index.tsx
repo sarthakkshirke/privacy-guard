@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
@@ -153,6 +152,12 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
         toggleFileUpload={toggleFileUpload}
         privacyEnabled={processingEnabled}
         onPrivacyToggle={handlePrivacyToggle}
+      />
+      
+      <PrivacyPrompt 
+        visible={processingEnabled} 
+        enabled={processingEnabled} 
+        onToggle={handlePrivacyToggle}
       />
     </Card>
   );

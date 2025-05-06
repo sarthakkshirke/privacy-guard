@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
@@ -121,6 +122,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     setShowFileUpload(!showFileUpload);
   };
 
+  const handlePrivacyToggle = () => {
+    setProcessingEnabled(!processingEnabled);
+  };
+
   return (
     <Card className="relative flex flex-col h-[520px] overflow-hidden border border-gray-200 shadow-md rounded-lg bg-white">
       <ChatHeader
@@ -146,9 +151,9 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
         onSendMessage={handleSendMessage}
         onSampleText={handleSampleText}
         toggleFileUpload={toggleFileUpload}
+        privacyEnabled={processingEnabled}
+        onPrivacyToggle={handlePrivacyToggle}
       />
-      
-      <PrivacyPrompt visible={processingEnabled} />
     </Card>
   );
 };

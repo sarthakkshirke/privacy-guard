@@ -3,8 +3,28 @@ import mammoth from 'mammoth';
 import * as pdfjsLib from 'pdfjs-dist';
 import { toast } from 'sonner';
 
-// Configure PDF.js worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsLib.PDFWorker ? '' : undefined;
+// Configure PDF.js worker with proper fallback handling
+const loadPdfWorker = () => {
+  // For web environments
+  if (typeof window !== 'undefined' && window.location.protocol.startsWith('http')) {
+    // Use CDN for web version
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+  } else {
+    // For Electron, use the bundled worker
+    try {
+      // Use the worker from the same package
+      const workerPath = new URL('pdfjs-dist/build/pdf.worker.min.js', import.meta.url);
+      pdfjsLib.GlobalWorkerOptions.workerSrc = workerPath.href;
+    } catch (err) {
+      console.error('Failed to set PDF.js worker path:', err);
+      // Last resort fallback
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+    }
+  }
+};
+
+// Initialize worker on module load
+loadPdfWorker();
 
 export const readTextFile = async (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -39,6 +59,11 @@ export const readPdfFile = async (file: File): Promise<string> => {
       try {
         console.log('Starting PDF extraction...');
         const typedArray = new Uint8Array(e.target.result as ArrayBuffer);
+        
+        // Ensure worker is initialized
+        if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
+          loadPdfWorker();
+        }
         
         // Create a loading task with more robust error handling
         const loadingTask = pdfjsLib.getDocument({

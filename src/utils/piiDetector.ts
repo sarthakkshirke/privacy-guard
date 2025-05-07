@@ -1,7 +1,7 @@
 // PII categories and regular expressions for detection
 import React from 'react';
 
-export type PiiCategory = 'name' | 'email' | 'phone' | 'address' | 'id' | 'financial' | 'health' | 'other' | 'indian_id' | 'indian_financial';
+export type PiiCategory = 'name' | 'email' | 'phone' | 'address' | 'id' | 'financial' | 'health' | 'other' | 'indian_id' | 'indian_financial' | 'credit_card' | 'ssn' | 'passport' | 'drivers_license' | 'vin' | 'ip_address' | 'mac_address' | 'patient_id';
 
 export interface PiiMatch {
   text: string;
@@ -17,17 +17,60 @@ export interface PiiResult {
   totalPiiCount: number;
 }
 
-// Enhanced PII detection patterns with India-specific patterns
-const PII_PATTERNS = {
+// Comprehensive PII detection patterns with enhanced accuracy and broader coverage
+const piiRegexes = {
+  // Names: Detects first and last names.
   name: /\b([A-Z][a-z]+)\s+([A-Z][a-z]+)\b/g,
+
+  // Emails: Detects standard email formats.
   email: /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g,
-  phone: /\b((\+91[\s-]?)?[6789]\d{9}|[0]\d{10})\b/g, // Indian phone numbers
-  address: /\b\d+\s+[A-Za-z\s]+,\s+[A-Za-z\s]+,\s+[A-Z]{2}\s+\d{6}\b/g, // Indian format with PIN code
-  id: /\b(?:\d{3}[-\s]?\d{2}[-\s]?\d{4}|\b[A-Z]{2}\d{6}[A-Z]?\b)/g,
-  financial: /\b(?:\$\s?\d{1,3}(?:,\d{3})*(?:\.\d{2})?|\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4})\b/g,
-  health: /\b(?:Patient|Medical Record|Diagnosis|Treatment|Dr\.|prescription|condition:|MRN:)\s*[A-Za-z0-9\s\-]+\b/gi,
-  indian_id: /\b(?:(?:[A-Z]{5}\d{4}[A-Z]|[A-Z]{2}\d{7})|(?:\d{12})|(?:[A-Z]{2}\d{6}[A-Z])|(?:[A-Z]{4}\d{7})|(?:[A-Z]{3}\d{7}))\b/gi, // Aadhar, PAN, Passport, Voter ID, Driving License
+
+  // Phone Numbers: Detects Indian phone numbers and generic 10-digit numbers.
+  phone: /\b(?:\+91[\s-]?)?[6-9]\d{9}\b|\b[0-9]{10}\b/g,
+
+  // Addresses: Detects Indian addresses with PIN codes and more generic address patterns.
+  address: /\b\d+\s+[A-Za-z\s]+(?:,\s*[A-Za-z\s]+){1,2},\s*[A-Z]{2}\s+\d{6}\b|\b\d+\s+[\w\s.,-]+(?:,\s*[\w\s.,-]+){1,2}\b/g,
+  
+  // US Social Security Numbers: Detects SSN in the format XXX-XX-XXXX.
+  ssn: /\b\d{3}-\d{2}-\d{4}\b/g,
+  
+  // US Drivers License: Detects US driver license numbers.
+  driversLicenseUS: /\b[A-Z]\d{8,14}\b/gi,
+  
+  // Passport Numbers: Detects US, UK, Canadian, and Indian passport numbers.
+  passportNumber: /\b(?:[A-Z]{2}\d{7}|[A-Z]{2}\d{6}|[A-PR-WYa-pr-wy][0-9]{6,9})\b/gi, // common formats
+  
+  //Vehicle Identification Numbers (VINs): Detects VINs, 17 characters, digits and uppercase letters.
+  vinNumber: /\b[A-HJ-NPR-Za-hj-npr-z\d]{8}[\dX][A-HJ-NPR-Za-hj-npr-z\d]{2}\d{6}\b/g,
+  
+  // Credit Card Numbers (Visa, Mastercard, Amex, Discover): Detects common credit card patterns.
+  creditCard: /\b(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|3[47][0-9]{13}|6(?:011|5[0-9]{2})[0-9]{12})\b/g,
+  
+  // IP Addresses (IPv4 and IPv6): Detects IPv4 and IPv6 addresses.
+  ipAddress: /\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b|\b(?:(?:[0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|(?:[0-9a-fA-F]{1,4}:){1,7}:|(?:[0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|(?:[0-9a-fA-F]{1,4}:){1,5}(?::[0-9a-fA-F]{1,4}){1,2}|(?:[0-9a-fA-F]{1,4}:){1,4}(?::[0-9a-fA-F]{1,4}){1,3}|(?:[0-9a-fA-F]{1,4}:){1,3}(?::[0-9a-fA-F]{1,4}){1,4}|(?:[0-9a-fA-F]{1,4}:){1,2}(?::[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:(?:(?::[0-9a-fA-F]{1,4}){1,6})|:(?:(?::[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(?::[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(?:ffff(?::0{1,4}){0,1}:){0,1}(?:(?:25[0-5]|(?:2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(?:25[0-5]|(?:2[0-4]|1{0,1}[0-9]){0,1}[0-9])|(?:[0-9a-fA-F]{1,4}:){1,4}:(?:(?:25[0-5]|(?:2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(?:25[0-5]|(?:2[0-4]|1{0,1}[0-9]){0,1}[0-9]))\b/gi,
+  
+  // MAC Addresses: Detects MAC addresses in common formats.
+  macAddress: /\b([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})\b/g,
+
+  // Generic ID Numbers: Catches common ID number patterns
+  id: /\b(?:\d{3}[-\s]?\d{2}[-\s]?\d{4})\b(?!\d)|\b\d{8,15}\b/g,
+
+  // Financial: Detects currency amounts and common bank account patterns
+  financial: /\b(?:\$\s?\d{1,3}(?:,\d{3})*(?:\.\d{2})?|\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}|\b\d{9,18}\b)\b/g,
+  
+  // Patient Record Numbers: Detects patient medical record numbers.
+  patientRecord: /\b(?:MRN|Patient ID|Record #):\s*[A-Za-z0-9-]+\b/gi,
+  
+  // Health: Enhanced keywords for health-related information.
+  health: /\b(?:Patient|Medical Record|Diagnosis|Treatment|Dr\.|prescription|condition:|MRN:|medication|healthcare|hospital|medical history|allergies)\s*[A-Za-z0-9\s-]+\b/gi,
+  
+  // Indian Identifiers (Aadhar, PAN, Passport, Voter ID, Driving License).
+  indian_id: /\b(?:(?:[A-Z]{5}\d{4}[A-Z]|[A-Z]{2}\d{7})|(?:\d{12})|(?:[A-Z]{2}\d{6}[A-Z])|(?:[A-Z]{4}\d{7})|(?:[A-Z]{3}\d{7}))\b/gi,
+  
+  // Indian Financial Identifiers (IFSC, Bank Account, UPI ID).
   indian_financial: /\b(?:(?:\d{11})|(?:\d{2}[-\s]?\d{2}[-\s]?\d{6}[-\s]?\d)|(?:\d{4}[-\s]?\d{4}[-\s]?\d{4}))\b/g, // IFSC, Bank Account, UPI ID
+
+  // Confidential Information: Detects keywords related to confidential data.
   other: /\b(?:confidential|classified|secret|private|internal use only)\b/gi,
 };
 
@@ -45,10 +88,18 @@ export const detectPii = (text: string): PiiResult => {
     other: 0,
     indian_id: 0,
     indian_financial: 0,
+    credit_card: 0,
+    ssn: 0,
+    passport: 0,
+    drivers_license: 0,
+    vin: 0,
+    ip_address: 0,
+    mac_address: 0,
+    patient_id: 0
   };
 
   // For each PII category, find all matches in the text
-  Object.entries(PII_PATTERNS).forEach(([category, pattern]) => {
+  Object.entries(piiRegexes).forEach(([category, pattern]) => {
     const matches = [...text.matchAll(new RegExp(pattern, 'g'))];
     
     matches.forEach((match) => {

@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Switch } from '@/components/ui/switch';
 import PiiProcessingOptions from '../PiiProcessingOptions';
 import { ProcessingMode } from '../PiiProcessingOptions';
-import { PiiCategory } from '@/utils/piiDetector';
+import { PiiCategory } from '@/utils/piiDetector'
 
 interface ChatHeaderProps {
   processingEnabled: boolean;
@@ -54,20 +54,26 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
           </DialogTrigger>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle className="text-gray-800">Privacy Configuration</DialogTitle>
+              <DialogTitle className="text-gray-800">
+                Privacy Configuration
+              </DialogTitle>
             </DialogHeader>
             <div className="flex items-center justify-between py-2">
               <div>
-                <h4 className="text-sm font-medium text-gray-800">Process PII before sending</h4>
-                <p className="text-xs text-gray-500">Automatically anonymize sensitive data</p>
+                <h4 className="text-sm font-medium text-gray-800">
+                  Process PII before sending
+                </h4>
+                <p className="text-xs text-gray-500">
+                  Automatically anonymize sensitive data
+                </p>
               </div>
-              <Switch 
-                checked={processingEnabled} 
+              <Switch
+                checked={processingEnabled}
                 onCheckedChange={setProcessingEnabled}
                 className="data-[state=checked]:bg-teal-600"
               />
             </div>
-            
+
             {processingEnabled && (
               <PiiProcessingOptions
                 selectedMode={processingMode}
@@ -78,7 +84,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
             )}
             
             <div className="mt-4 flex justify-end">
-              <Button 
+              <Button
                 onClick={() => setConfigOpen(false)}
                 className="bg-teal-600 hover:bg-teal-700 text-white"
               >
@@ -87,24 +93,27 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
             </div>
           </DialogContent>
         </Dialog>
-        
-        <div className={`flex items-center px-3 py-1.5 rounded-full text-xs font-medium ${
-          processingEnabled 
-            ? 'bg-teal-50 text-teal-700' 
-            : 'bg-amber-50 text-amber-700'
-        }`}>
+
+        <Button
+          onClick={() => setProcessingEnabled(!processingEnabled)}
+          variant="ghost"
+          className={`flex items-center px-3 py-1.5 rounded-full text-xs font-medium ${processingEnabled
+            ? "bg-teal-50 text-teal-700"
+            : "bg-amber-50 text-amber-700"
+            }`}
+        >
           {processingEnabled ? (
-            <>
+            <div className="flex items-center">
               <EyeOff className="h-3 w-3 mr-1.5" />
-              <span>Protected</span>
-            </>
+              Protected
+            </div>
           ) : (
-            <>
+            <div className="flex items-center">
               <Eye className="h-3 w-3 mr-1.5" />
-              <span>Raw Text</span>
-            </>
+              Raw Text
+            </div>
           )}
-        </div>
+        </Button>
       </div>
     </div>
   );

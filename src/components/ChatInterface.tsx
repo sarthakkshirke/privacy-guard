@@ -159,7 +159,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   };
 
   return (
-    <Card className="relative flex flex-col h-[520px] overflow-hidden border shadow-lg rounded-xl bg-gradient-to-b from-white to-gray-50">
+    <Card className="relative flex flex-col overflow-hidden border shadow-lg rounded-xl bg-gradient-to-b from-white to-gray-50">
       <div className="bg-primary/5 border-b px-4 py-3 flex justify-between items-center">
         <div className="flex items-center space-x-2">
           <div className="h-3 w-3 bg-primary rounded-full animate-pulse-slow"></div>

@@ -55,7 +55,7 @@ const Dashboard: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto p-4 md:p-6 space-y-8 max-w-7xl">
+    <div className="space-y-8">
       <header className="text-center mb-8 bg-gradient-to-r from-white to-gray-50 rounded-xl p-6 shadow-sm border">
         <div className="flex justify-center mb-4">
           <div className="h-12 w-12 bg-primary/10 rounded-full flex items-center justify-center">

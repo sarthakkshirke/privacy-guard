@@ -1,8 +1,7 @@
 #root {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  padding: 2rem; 
 }
 
 .logo {
@@ -37,6 +36,60 @@
   padding: 2em;
 }
 
+.card > *:first-child, .card > *:last-child,
+.card > .space-y-4 > *:first-child, .card > .space-y-4 > *:last-child {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
 .read-the-docs {
   color: #888;
+}
+
+/* PII Highlight */
+.pii-highlight {
+  color: black;
+  border-radius: 4px;
+  padding: 0 4px;
+}
+
+/* PII Categories */
+.pii-name {
+  background-color: #ffdddd !important; /* Light Red */
+}
+
+.pii-email {
+  background-color: #ddffdd !important; /* Light Green */
+}
+
+.pii-phone {
+  background-color: #ddddff !important; /* Light Blue */
+}
+
+.pii-address {
+  background-color: #ffffdd !important; /* Light Yellow */
+}
+
+.pii-id {
+  background-color: #ffddee !important; /* Light Pink */
+}
+
+.pii-financial {
+  background-color: #eeffee !important; /* Light Mint */
+}
+
+.pii-health {
+  background-color: #ffeeee !important; /* Light Peach */
+}
+
+.pii-other {
+  background-color: #eeeeff !important; /* Light Lavender */
+}
+
+.pii-indian_id {
+  background-color: #eefeff !important; /* Light Cyan */
+}
+
+.pii-indian_financial {
+  background-color: #fff0f5 !important; /* Light LavenderBlush */
 }

@@ -1,4 +1,5 @@
-const { app, BrowserWindow } = require('electron');
+
+const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const url = require('url');
 
@@ -38,7 +39,13 @@ function createWindow() {
 }
 
 // Create window when Electron is ready
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  createWindow();
+  
+  // Handle IPC calls from renderer
+  ipcMain.handle('get-path', (_, name) => app.getPath(name));
+  ipcMain.handle('get-app-version', () => app.getVersion());
+});
 
 // Quit when all windows are closed, except on macOS
 app.on('window-all-closed', function () {

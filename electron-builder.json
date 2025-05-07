@@ -15,8 +15,15 @@
   },
   "win": {
     "target": [
-      "nsis"
-    ]
+      {
+        "target": "nsis",
+        "arch": [
+          "x64",
+          "ia32"
+        ]
+      }
+    ],
+    "icon": "public/favicon.ico"
   },
   "linux": {
     "target": [

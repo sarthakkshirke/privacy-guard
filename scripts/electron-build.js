@@ -1,6 +1,10 @@
 
 const { spawn } = require('child_process');
 
+// Get platform from command line args
+const args = process.argv.slice(2);
+const platforms = args.filter(arg => arg === '--win' || arg === '--mac' || arg === '--linux');
+
 // Build React app
 const buildReact = spawn('npm', ['run', 'build'], { 
   shell: true,
@@ -15,8 +19,22 @@ buildReact.on('close', (code) => {
   
   console.log('React build completed successfully');
   
+  // Prepare electron-builder command
+  let electronBuilderArgs = ['build'];
+  
+  // Add platform-specific flags if provided
+  if (platforms.length > 0) {
+    platforms.forEach(platform => {
+      if (platform === '--win') electronBuilderArgs.push('--win');
+      if (platform === '--mac') electronBuilderArgs.push('--mac');
+      if (platform === '--linux') electronBuilderArgs.push('--linux');
+    });
+  }
+  
+  electronBuilderArgs.push('--config', 'electron-builder.json');
+  
   // Build Electron app
-  const buildElectron = spawn('electron-builder', ['build', '--config', 'electron-builder.json'], {
+  const buildElectron = spawn('electron-builder', electronBuilderArgs, {
     shell: true,
     stdio: 'inherit'
   });

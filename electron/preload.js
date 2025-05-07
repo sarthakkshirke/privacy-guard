@@ -6,6 +6,11 @@ const { contextBridge, ipcRenderer } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
+// Detect platform for appropriate file handling
+const isMac = process.platform === 'darwin';
+const isWindows = process.platform === 'win32';
+const isLinux = process.platform === 'linux';
+
 // Expose specific APIs to the renderer process
 contextBridge.exposeInMainWorld('electron', {
   // File system access for enhanced file operations
@@ -21,7 +26,12 @@ contextBridge.exposeInMainWorld('electron', {
         });
       });
     },
-    getPath: (name) => ipcRenderer.invoke('get-path', name)
+    getPath: (name) => ipcRenderer.invoke('get-path', name),
+    platform: {
+      isMac,
+      isWindows,
+      isLinux
+    }
   },
   // Expose app information
   app: {

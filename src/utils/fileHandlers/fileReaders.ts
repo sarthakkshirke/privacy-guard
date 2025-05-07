@@ -3,24 +3,46 @@ import mammoth from 'mammoth';
 import * as pdfjsLib from 'pdfjs-dist';
 import { toast } from 'sonner';
 
-// Configure PDF.js worker with proper fallback handling
+// Configure PDF.js worker with proper fallback handling for cross-platform support
 const loadPdfWorker = () => {
+  console.log('Loading PDF worker...');
+  
+  // Access electron platform info if available
+  const isElectron = typeof window !== 'undefined' && window.electron;
+  const electronPlatform = isElectron ? window.electron.fileSystem.platform : null;
+  
   // For web environments
   if (typeof window !== 'undefined' && window.location.protocol.startsWith('http')) {
-    // Use CDN for web version
+    console.log('Web environment detected, using CDN for PDF worker');
     pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
-  } else {
-    // For Electron, use the bundled worker
+  } 
+  // For Electron on any platform
+  else if (isElectron) {
     try {
-      // Use the worker from the same package
+      console.log('Electron environment detected');
+      // Use the worker from the same package with proper path handling
+      const workerPath = new URL('pdfjs-dist/build/pdf.worker.min.js', import.meta.url);
+      pdfjsLib.GlobalWorkerOptions.workerSrc = workerPath.href;
+      console.log('Set PDF worker path:', pdfjsLib.GlobalWorkerOptions.workerSrc);
+    } catch (err) {
+      console.error('Failed to set PDF.js worker path in Electron:', err);
+      // Fallback to CDN
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+    }
+  } 
+  // Unknown environment, try best effort
+  else {
+    console.warn('Unknown environment, using fallback PDF worker config');
+    try {
       const workerPath = new URL('pdfjs-dist/build/pdf.worker.min.js', import.meta.url);
       pdfjsLib.GlobalWorkerOptions.workerSrc = workerPath.href;
     } catch (err) {
       console.error('Failed to set PDF.js worker path:', err);
-      // Last resort fallback
       pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
     }
   }
+  
+  console.log('PDF worker source set to:', pdfjsLib.GlobalWorkerOptions.workerSrc);
 };
 
 // Initialize worker on module load

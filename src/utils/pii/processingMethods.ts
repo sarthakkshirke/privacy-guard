@@ -19,7 +19,15 @@ export const redactMethods: Record<PiiCategory, (text: string) => string> = {
   health: () => '[HEALTH INFO REDACTED]',
   other: () => '[REDACTED]',
   indian_id: () => '[INDIAN ID REDACTED]',
-  indian_financial: () => '[INDIAN FINANCIAL INFO REDACTED]'
+  indian_financial: () => '[INDIAN FINANCIAL INFO REDACTED]',
+  credit_card: () => '[CREDIT CARD REDACTED]',
+  ssn: () => '[SSN REDACTED]',
+  passport: () => '[PASSPORT REDACTED]',
+  drivers_license: () => '[DRIVERS LICENSE REDACTED]',
+  vin: () => '[VIN REDACTED]',
+  ip_address: () => '[IP ADDRESS REDACTED]',
+  mac_address: () => '[MAC ADDRESS REDACTED]',
+  patient_id: () => '[PATIENT ID REDACTED]',
 };
 
 // Anonymization methods for different types of PII
@@ -35,12 +43,27 @@ export const anonymizeMethods: Record<PiiCategory, (text: string) => string> = {
     return `${randomName}.${Math.floor(Math.random() * 1000)}@${randomDomain}`;
   },
   phone: () => {
-    // Generate a random US phone number
-    const areaCode = Math.floor(Math.random() * 900) + 100;
-    const prefix = Math.floor(Math.random() * 900) + 100;
-    const lineNum = Math.floor(Math.random() * 9000) + 1000;
-    return `${areaCode}-${prefix}-${lineNum}`;
+    // Generate a random 10-digit Indian phone number starting with 6-9
+    let phoneNumber = String(Math.floor(Math.random() * 4) + 6); // First digit: 6-9
+    for (let i = 0; i < 9; i++) {
+        phoneNumber += String(Math.floor(Math.random() * 10));
+    }
+  
+    // Redact two random digits
+    let redactedPhoneNumber = phoneNumber.split('');
+    let indicesToRedact = [];
+    while (indicesToRedact.length < 2) {
+      const randomIndex = Math.floor(Math.random() * 10);
+      if (!indicesToRedact.includes(randomIndex)) {
+        indicesToRedact.push(randomIndex);
+      }
+    }
+    indicesToRedact.forEach(index => {
+      redactedPhoneNumber[index] = 'X';
+    });
+    return redactedPhoneNumber.join('');
   },
+  
   address: () => {
     // Generate a random US address
     const houseNumber = Math.floor(Math.random() * 9000) + 1000;
@@ -58,6 +81,14 @@ export const anonymizeMethods: Record<PiiCategory, (text: string) => string> = {
     // Generate a random credit card number format
     return `XXXX-XXXX-XXXX-${Math.floor(Math.random() * 9000) + 1000}`;
   },
+  credit_card: () => '[CREDIT CARD REDACTED]',
+  ssn: () => '[SSN REDACTED]',
+  passport: () => '[PASSPORT REDACTED]',
+  drivers_license: () => '[DRIVERS LICENSE REDACTED]',
+  vin: () => '[VIN REDACTED]',
+  ip_address: () => '[IP ADDRESS REDACTED]',
+  mac_address: () => '[MAC ADDRESS REDACTED]',
+  patient_id: () => '[PATIENT ID REDACTED]',
   health: (text: string) => {
     const hospital = getRandomItem(syntheticData.hospitals);
     const condition = getRandomItem(syntheticData.conditions);

@@ -25,15 +25,15 @@ const piiRegexes = {
   // Emails: Detects standard email formats.
   email: /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g,
 
-  // Phone Numbers: Detects Indian phone numbers and generic 10-digit numbers.
-  phone: /\b(?:\+91[\s-]?)?[6-9]\d{9}\b|\b[0-9]{10}\b/g,
+    // Phone Numbers: Detects Indian phone numbers and generic 10-digit numbers with more precision.
+  phone: /(?<!\d)(?:\+91[\s-]?)?[6-9]\d{9}(?!\d)|(?<!\d)\b\d{10}\b(?!\d)/g,
 
   // Addresses: Detects Indian addresses with PIN codes and more generic address patterns.
-  address: /\b\d+\s+[A-Za-z\s]+(?:,\s*[A-Za-z\s]+){1,2},\s*[A-Z]{2}\s+\d{6}\b|\b\d+\s+[\w\s.,-]+(?:,\s*[\w\s.,-]+){1,2}\b/g,
-  
+  address: /\b\d+\s+[A-Za-z\s]+(?:,\s*[A-Za-z\s]+){1,2},\s*[A-Z]{2}\s+\d{6}\b|\b\d+\s+[\w\s.,-]+(?:,\s*[\w\s.,-]+){1,2}\b/gi,
+
   // US Social Security Numbers: Detects SSN in the format XXX-XX-XXXX.
   ssn: /\b\d{3}-\d{2}-\d{4}\b/g,
-  
+
   // US Drivers License: Detects US driver license numbers.
   driversLicenseUS: /\b[A-Z]\d{8,14}\b/gi,
   
@@ -53,17 +53,17 @@ const piiRegexes = {
   macAddress: /\b([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})\b/g,
 
   // Generic ID Numbers: Catches common ID number patterns
-  id: /\b(?:\d{3}[-\s]?\d{2}[-\s]?\d{4})\b(?!\d)|\b\d{8,15}\b/g,
+  id: /(?<!\d)\b\d{8,14}\b(?!\d)|(?<!\d)(?:\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b)(?!\d)/g,
 
-  // Financial: Detects currency amounts and common bank account patterns
-  financial: /\b(?:\$\s?\d{1,3}(?:,\d{3})*(?:\.\d{2})?|\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}|\b\d{9,18}\b)\b/g,
+  // Financial: Detects currency amounts and common bank account patterns, refined for accuracy.
+  financial: /(?<!\d)\b\d{9,18}\b(?!\d)|\b(?:\$\s?\d{1,3}(?:,\d{3})*(?:\.\d{2})?)|(?<!\d)(?:\d{4}[-\s]?){3}\d{4}(?!\d)/g,
   
   // Patient Record Numbers: Detects patient medical record numbers.
   patientRecord: /\b(?:MRN|Patient ID|Record #):\s*[A-Za-z0-9-]+\b/gi,
   
   // Health: Enhanced keywords for health-related information.
   health: /\b(?:Patient|Medical Record|Diagnosis|Treatment|Dr\.|prescription|condition:|MRN:|medication|healthcare|hospital|medical history|allergies)\s*[A-Za-z0-9\s-]+\b/gi,
-  
+
   // Indian Identifiers (Aadhar, PAN, Passport, Voter ID, Driving License).
   indian_id: /\b(?:(?:[A-Z]{5}\d{4}[A-Z]|[A-Z]{2}\d{7})|(?:\d{12})|(?:[A-Z]{2}\d{6}[A-Z])|(?:[A-Z]{4}\d{7})|(?:[A-Z]{3}\d{7}))\b/gi,
   
@@ -98,25 +98,47 @@ export const detectPii = (text: string): PiiResult => {
     patient_id: 0
   };
 
-  // For each PII category, find all matches in the text
+  const allMatches: PiiMatch[] = [];
+
   Object.entries(piiRegexes).forEach(([category, pattern]) => {
     const matches = [...text.matchAll(new RegExp(pattern, 'g'))];
-    
+
     matches.forEach((match) => {
       const matchText = match[0];
       const startIndex = match.index || 0;
-      const endIndex = startIndex + matchText.length;
-      
-      detectedPii.push({
+      const endIndex = startIndex + matchText.length;      
+
+      allMatches.push({
         text: matchText,
         startIndex,
         endIndex,
         category: category as PiiCategory,
       });
-      
-      piiCount[category as PiiCategory] += 1;
     });
   });
+
+  allMatches.sort((a, b) => a.startIndex - b.startIndex);
+
+  const consolidatedMatches: PiiMatch[] = [];
+  let lastEnd = -1;
+
+  allMatches.forEach(match => {
+    if (match.startIndex > lastEnd) {
+      consolidatedMatches.push(match);
+      lastEnd = match.endIndex;
+    } else if (match.endIndex > lastEnd){
+        const lastMatch = consolidatedMatches.pop();
+        if(lastMatch){
+            const newMatch = {...lastMatch, endIndex: match.endIndex, text: text.substring(lastMatch.startIndex, match.endIndex)}
+            consolidatedMatches.push(newMatch);
+            lastEnd = match.endIndex;
+        }
+    }
+  });
+
+  consolidatedMatches.forEach(match => {
+    piiCount[match.category] +=1;
+  })
 
   // Sort detected PII by start index to maintain original text order
   detectedPii.sort((a, b) => a.startIndex - b.startIndex);
@@ -124,8 +146,8 @@ export const detectPii = (text: string): PiiResult => {
   // Calculate total PII count
   const totalPiiCount = Object.values(piiCount).reduce((a, b) => a + b, 0);
 
-  return {
-    detectedPii,
+    return {
+    detectedPii: consolidatedMatches,
     piiCount,
     totalPiiCount,
   };
